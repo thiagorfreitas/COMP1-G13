@@ -45,10 +45,10 @@ Certifique-se de ter as seguintes ferramentas instaladas:
   <tr>
     <td align="center"><a href="https://github.com/ArthurGabrieel"><img style="border-radius: 50%;" src="https://github.com/ArthurGabrieel.png" width="130px;" alt=""/><br /><sub><b>Arthur Gabriel</b></sub></a><br/></td>
     <td align="center"><a href="https://github.com/Caio-bergbjj"><img style="border-radius: 50%;" src="https://github.com/Caio-bergbjj.png" width="130px;" alt=""/><br /><sub><b>Caio Berg</b></sub></a><br/></td>
+    <td align="center"><a href="https://github.com/EmivaltoJrr"><img style="border-radius: 50%;" src="https://github.com/EmivaltoJrr.png" width="130px;" alt=""/><br /><sub><b>Emivalto Junior</b></sub></a><br/></td>
     <td align="center"><a href="https://github.com/thiagorfreitas"><img style="border-radius: 50%;" src="https://github.com/thiagorfreitas.png" width="130px;" alt=""/><br /><sub><b>Thiago Freitas</b></sub></a><br/></td>
     <td align="center"><a href="https://github.com/Wengel-Rodrigues"><img style="border-radius: 50%;" src="https://github.com/Wengel-Rodrigues.png" width="130px;" alt=""/><br /><sub><b>Wengel Rodrigues</b></sub></a><br/></td>
     <td align="center"><a href="https://github.com/wesleysantos00"><img style="border-radius: 50%;" src="https://github.com/wesleysantos00.png" width="130px;" alt=""/><br /><sub><b>Wesley Santos</b></sub></a><br/></td>
-    <td align="center"><a href="https://github.com/EmivaltoJrr"><img style="border-radius: 50%;" src="https://github.com/EmivaltoJrr.png" width="130px;" alt=""/><br /><sub><b>Emivalto Junior</b></sub></a><br/></td>
   </tr>
 </table>
 

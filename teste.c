@@ -1,3 +1,3 @@
 int idade;
-float peso;
-long long valorGrande;
+idade = 25;
+printf("Idade: %d", idade);

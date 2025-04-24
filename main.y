@@ -16,6 +16,9 @@ void yyerror(const char *s);
 %token ASSIGN EQ OP
 %token SEMI COMMA LPAREN RPAREN LBRACE RBRACE
 
+%type <str> tipo
+%type <str> declaracao
+
 %start programa
 
 %%

@@ -1,45 +1,50 @@
 %{
+#include "main.tab.h"  // Arquivo de tokens gerado pelo Bison
+#include <string.h>
 #include <stdio.h>
 %}
 
-/* Definições de padrões de token e ações */
 %%
 
-if          { printf("KW_IF\n"); }
-while       { printf("KW_WHILE\n"); }
-for         { printf("KW_FOR\n"); }
-return      { printf("KW_RETURN\n"); }
-int         { printf("KW_INT\n"); }
-float       { printf("KW_FLOAT\n"); }
-char        { printf("KW_CHAR\n"); }
-double      { printf("KW_DOUBLE\n"); }
-long        { printf("KW_LONG\n"); }
-"long"([ \t]+)"long"   { printf("KW_LONG_LONG\n"); }
-bool        { printf("KW_BOOL\n"); }
-short       { printf("KW_SHORT\n"); }
+"int"           { return INT; }
+"float"         { return FLOAT; }
+"char"          { return CHAR; }
+"double"        { return DOUBLE; }
+"long"([ \t]+)"long"    { return LONGLONG; }
+"if"            { return IF; }
+"else"          { return ELSE; }
+"while"         { return WHILE; }
+"return"        { return RETURN; }
 
-"//".*      { /* Ignorar comentários de linha */ }
-"/*"([^*]|\*+[^*/])*\*+\/    { /* Ignorar comentários de bloco */ }
+"//".*          { /* ignora comentários de linha */ }
+"/*"([^*]|\*+[^*/])*\*+\/    { /* ignora comentários de bloco */ }
 
-[a-zA-Z_][a-zA-Z0-9_]*  { printf("IDENT(%s)\n", yytext); }
-
-[0-9]+(\.[0-9]+)?  { printf("NUMBER(%s)\n", yytext); }
-
-[+\-*/=;]   { printf("SYMBOL(%s)\n", yytext); }
-
-[ \t\n]+    { /* Ignorar espaços em branco */ }
-
-.           { printf("UNKNOWN(%s)\n", yytext); }
-
-%%
-
-/* Função auxiliar do Flex (quando termina o arquivo de entrada) */
-int yywrap(void) {
-    return 1;
+[a-zA-Z_][a-zA-Z0-9_]*  {
+    yylval.str = strdup(yytext);
+    return ID;
 }
 
-/* Função principal: executa o analisador léxico */
-int main(void) {
-    yylex();
-    return 0;
+[0-9]+(\.[0-9]+)? {
+    yylval.str = strdup(yytext);
+    return NUMBER;
+}
+
+"=="            { return EQ; }
+"="             { return ASSIGN; }
+";"             { return SEMI; }
+"("             { return LPAREN; }
+")"             { return RPAREN; }
+"{"             { return LBRACE; }
+"}"             { return RBRACE; }
+","             { return COMMA; }
+[+\-*/]         { return OP; }
+
+[ \t\n]+        ;  // ignora espaços
+
+.               { printf("Token desconhecido: %s\n", yytext); }
+
+%%
+
+int yywrap(void) {
+    return 1;
 }

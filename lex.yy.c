@@ -897,7 +897,7 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 22 "main.l"
-{ return KW_INT; }
+{ printf("TOKEN: KW_INT\n"); return KW_INT; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
@@ -1122,13 +1122,14 @@ case 57:
 YY_RULE_SETUP
 #line 78 "main.l"
 {
-    yylval.str = strdup(yytext);
+    printf("TOKEN: ID(%s)\n", yytext); 
+    yylval.str = strdup(yytext); 
     return ID;
 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 83 "main.l"
+#line 84 "main.l"
 {
     yylval.str = strdup(yytext);
     return NUMBER;
@@ -1137,25 +1138,25 @@ YY_RULE_SETUP
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 88 "main.l"
+#line 89 "main.l"
 { /* Ignora espaços */ }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 89 "main.l"
+#line 90 "main.l"
 ; // ignora carriage return (Windows)
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 91 "main.l"
+#line 92 "main.l"
 { printf("UNKNOWN(%s)\n", yytext); }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 93 "main.l"
+#line 94 "main.l"
 ECHO;
 	YY_BREAK
-#line 1159 "lex.yy.c"
+#line 1160 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2160,7 +2161,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 93 "main.l"
+#line 94 "main.l"
 
 
 int yywrap(void) {

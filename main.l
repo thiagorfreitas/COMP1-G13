@@ -19,7 +19,7 @@
 "float"       { return KW_FLOAT; }
 "for"         { return KW_FOR; }
 "if"          { return KW_IF; }
-"int"         { return KW_INT; }
+"int"         { printf("TOKEN: KW_INT\n"); return KW_INT; }
 "long"        { return KW_LONG; }
 "return"      { return KW_RETURN; }
 "short"       { return KW_SHORT; }
@@ -76,7 +76,8 @@
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-    yylval.str = strdup(yytext);
+    printf("TOKEN: ID(%s)\n", yytext); 
+    yylval.str = strdup(yytext); 
     return ID;
 }
 

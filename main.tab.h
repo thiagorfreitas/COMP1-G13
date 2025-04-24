@@ -56,24 +56,60 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     ID = 258,                      /* ID  */
     NUMBER = 259,                  /* NUMBER  */
-    INT = 260,                     /* INT  */
-    FLOAT = 261,                   /* FLOAT  */
-    CHAR = 262,                    /* CHAR  */
-    DOUBLE = 263,                  /* DOUBLE  */
-    LONGLONG = 264,                /* LONGLONG  */
-    IF = 265,                      /* IF  */
-    ELSE = 266,                    /* ELSE  */
-    WHILE = 267,                   /* WHILE  */
-    RETURN = 268,                  /* RETURN  */
-    ASSIGN = 269,                  /* ASSIGN  */
-    EQ = 270,                      /* EQ  */
-    OP = 271,                      /* OP  */
-    SEMI = 272,                    /* SEMI  */
-    COMMA = 273,                   /* COMMA  */
-    LPAREN = 274,                  /* LPAREN  */
-    RPAREN = 275,                  /* RPAREN  */
-    LBRACE = 276,                  /* LBRACE  */
-    RBRACE = 277                   /* RBRACE  */
+    STRING = 260,                  /* STRING  */
+    CHAR = 261,                    /* CHAR  */
+    KW_INT = 262,                  /* KW_INT  */
+    KW_FLOAT = 263,                /* KW_FLOAT  */
+    KW_CHAR = 264,                 /* KW_CHAR  */
+    KW_DOUBLE = 265,               /* KW_DOUBLE  */
+    KW_RETURN = 266,               /* KW_RETURN  */
+    KW_IF = 267,                   /* KW_IF  */
+    KW_ELSE = 268,                 /* KW_ELSE  */
+    KW_WHILE = 269,                /* KW_WHILE  */
+    KW_FOR = 270,                  /* KW_FOR  */
+    KW_DO = 271,                   /* KW_DO  */
+    KW_VOID = 272,                 /* KW_VOID  */
+    KW_LONG = 273,                 /* KW_LONG  */
+    KW_SHORT = 274,                /* KW_SHORT  */
+    KW_SIGNED = 275,               /* KW_SIGNED  */
+    KW_UNSIGNED = 276,             /* KW_UNSIGNED  */
+    KW_BREAK = 277,                /* KW_BREAK  */
+    KW_CASE = 278,                 /* KW_CASE  */
+    KW_CONST = 279,                /* KW_CONST  */
+    KW_CONTINUE = 280,             /* KW_CONTINUE  */
+    KW_DEFAULT = 281,              /* KW_DEFAULT  */
+    KW_ENUM = 282,                 /* KW_ENUM  */
+    KW_STATIC = 283,               /* KW_STATIC  */
+    KW_SIZEOF = 284,               /* KW_SIZEOF  */
+    KW_SWITCH = 285,               /* KW_SWITCH  */
+    OP_ASSIGN = 286,               /* OP_ASSIGN  */
+    OP_EQ = 287,                   /* OP_EQ  */
+    OP_NEQ = 288,                  /* OP_NEQ  */
+    OP_LEQ = 289,                  /* OP_LEQ  */
+    OP_GEQ = 290,                  /* OP_GEQ  */
+    OP_AND = 291,                  /* OP_AND  */
+    OP_OR = 292,                   /* OP_OR  */
+    OP_INC = 293,                  /* OP_INC  */
+    OP_DEC = 294,                  /* OP_DEC  */
+    OP_PLUS = 295,                 /* OP_PLUS  */
+    OP_MINUS = 296,                /* OP_MINUS  */
+    OP_MUL = 297,                  /* OP_MUL  */
+    OP_DIV = 298,                  /* OP_DIV  */
+    OP_LT = 299,                   /* OP_LT  */
+    OP_GT = 300,                   /* OP_GT  */
+    OP_BIT_AND = 301,              /* OP_BIT_AND  */
+    OP_BIT_OR = 302,               /* OP_BIT_OR  */
+    OP_BIT_XOR = 303,              /* OP_BIT_XOR  */
+    OP_BIT_NOT = 304,              /* OP_BIT_NOT  */
+    OP_NOT = 305,                  /* OP_NOT  */
+    SEMICOLON = 306,               /* SEMICOLON  */
+    COMMA = 307,                   /* COMMA  */
+    LPAREN = 308,                  /* LPAREN  */
+    RPAREN = 309,                  /* RPAREN  */
+    LBRACE = 310,                  /* LBRACE  */
+    RBRACE = 311,                  /* RBRACE  */
+    LBRACKET = 312,                /* LBRACKET  */
+    RBRACKET = 313                 /* RBRACKET  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,11 +118,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 9 "main.y"
+#line 10 "main.y"
 
     char* str;
 
-#line 90 "main.tab.h"
+#line 126 "main.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

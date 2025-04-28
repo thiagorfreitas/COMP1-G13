@@ -8,7 +8,6 @@ O projeto foi desenvolvido por alunos do curso de Engenharia de Software, do Gru
 
 - Análise léxica de código C usando Flex.
 - Análise sintática e geração de árvore de derivação com Bison.
-- Tradução de código C para Python.
 - Suporte a estruturas básicas de controle e funções.
 
 ## Requisitos
@@ -18,7 +17,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
 - **Flex**: Para análise léxica.
 - **Bison**: Para análise sintática.
 - **GCC**: Para compilar o código gerado.
-- **Python 3.x**: Para executar o código traduzido.
+
 
 ## Como Usar
 
@@ -29,15 +28,11 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     gcc -o compiler lex.yy.c parser.tab.c -lfl
     ```
 
-2. Execute o compilador com um arquivo de entrada em C:
+2. Testar o fluxo léxico-sintático:
     ```bash
-    ./compiler input.c -o output.py
+    ./compiler < teste.c
     ```
 
-3. Execute o código Python gerado:
-    ```bash
-    python3 output.py
-    ```
 
 ## Contribuidores
 

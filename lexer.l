@@ -1,5 +1,5 @@
 %{
-#include "main.tab.h"
+#include "parser.tab.h"
 #include <string.h>
 #include <stdio.h>
 %}
@@ -39,6 +39,7 @@
 "||"          { return OP_OR; }
 "++"          { return OP_INC; }
 "--"          { return OP_DEC; }
+
 "+"           { return OP_PLUS; }
 "-"           { return OP_MINUS; }
 "*"           { return OP_MUL; }
@@ -75,7 +76,7 @@
     return CHAR;
 }
 
-[a-zA-Z_][a-zA-Z0-9_]* {
+[a-zA-Z_][a-zA-Z0-9_]* { 
     printf("TOKEN: ID(%s)\n", yytext); 
     yylval.str = strdup(yytext); 
     return ID;
@@ -89,7 +90,7 @@
 [ \t\n]+      { /* Ignora espaços */ }
 \r            ; // ignora carriage return (Windows)
 
-.             { printf("UNKNOWN(%s)\n", yytext); }
+.             { printf("Caractere não reconhecido: %s\n", yytext); }
 
 %%
 

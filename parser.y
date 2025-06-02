@@ -26,6 +26,7 @@ void yyerror(const char *s);
 /* Operadores e símbolos */
 %token OP_ASSIGN OP_EQ OP_NEQ OP_LEQ OP_GEQ OP_AND OP_OR OP_INC OP_DEC
 %token OP_PLUS OP_MINUS OP_MUL OP_DIV
+%token OP_MOD
 %token OP_LT OP_GT OP_BIT_AND OP_BIT_OR OP_BIT_XOR OP_BIT_NOT OP_NOT
 
 %token SEMICOLON COMMA LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
@@ -38,7 +39,8 @@ void yyerror(const char *s);
 %left OP_EQ OP_NEQ
 %left OP_LT OP_GT OP_LEQ OP_GEQ
 %left OP_PLUS OP_MINUS
-%left OP_MUL OP_DIV
+%left OP_MUL OP_DIV OP_MOD
+
 
 %%
 
@@ -55,9 +57,12 @@ comando:
     declaracao_var
   | atribuicao
   | print
-  | KW_IF LPAREN expr RPAREN comando    { printf("[IF]\n"); }
-  | KW_WHILE LPAREN expr RPAREN comando { printf("[WHILE]\n"); }
-    ;
+  | bloco
+  | if_else
+  | while_loop
+  | for_loop
+  | do_while_loop
+  ;
 
 declaracao_var:
     tipo ID SEMICOLON {
@@ -77,6 +82,42 @@ print:
     }
     ;
 
+
+bloco:
+    LBRACE lista_comandos RBRACE
+    ;
+
+
+if_else:
+    KW_IF LPAREN expr RPAREN comando {
+        printf("[IF]\n");
+    }
+  | KW_IF LPAREN expr RPAREN comando KW_ELSE comando {
+        printf("[IF/ELSE]\n");
+    }
+    ;
+
+
+while_loop:
+    KW_WHILE LPAREN expr RPAREN comando {
+        printf("[WHILE]\n");
+    }
+    ;
+
+
+for_loop:
+    KW_FOR LPAREN atribuicao expr SEMICOLON atribuicao RPAREN comando {
+        printf("[FOR]\n");
+    }
+    ;
+
+
+do_while_loop:
+    KW_DO comando KW_WHILE LPAREN expr RPAREN SEMICOLON {
+        printf("[DO_WHILE]\n");
+    }
+    ;
+
 expr:
     valor                   { $$ = $1; }
   | ID                      { $$ = strdup($1); }
@@ -84,6 +125,7 @@ expr:
   | expr OP_MINUS expr      { $$ = strdup("(expr-expr)"); }
   | expr OP_MUL expr        { $$ = strdup("(expr*expr)"); }
   | expr OP_DIV expr        { $$ = strdup("(expr/expr)"); }
+  | expr OP_MOD expr        { $$ = strdup("(expr%expr)"); }
   | LPAREN expr RPAREN      { $$ = $2; }
     ;
 

@@ -53,6 +53,8 @@
 "~"           { return OP_BIT_NOT; }
 "!"           { return OP_NOT; }
 
+"%"           { return OP_MOD; }
+
 ";"           { return SEMICOLON; }
 ","           { return COMMA; }
 "("           { return LPAREN; }

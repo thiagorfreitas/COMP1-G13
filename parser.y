@@ -3,13 +3,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "tabela.h"
+
 int yylex(void);
 void yyerror(const char *s);
 %}
 
 %union {
     char* str;
+    struct {
+        char* valor;
+        char* tipo;
+    } exprinfo;
 }
+
 
 %start programa
 
@@ -31,7 +38,8 @@ void yyerror(const char *s);
 
 %token SEMICOLON COMMA LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 
-%type <str> valor tipo expr
+%type <exprinfo> expr valor
+%type <str> tipo
 
 /* Precedência e associatividade para expressões */
 %left OP_OR
@@ -66,15 +74,28 @@ comando:
 
 declaracao_var:
     tipo ID SEMICOLON {
-        printf("[DECL] Tipo: %s, Nome: %s\n", $1, $2);
+        if (buscar_simbolo($2)) {
+            printf("Erro: variável '%s' já declarada!\n", $2);
+        } else {
+            adicionar_simbolo($2, $1);
+            printf("[DECL] Tipo: %s, Nome: %s\n", $1, $2);
+        }
     }
     ;
 
 atribuicao:
     ID OP_ASSIGN expr SEMICOLON {
-        printf("[ATRIB] %s = %s\n", $1, $3);
+        Simbolo* sim = buscar_simbolo($1);
+        if (!sim) {
+            printf("Erro: variável '%s' não declarada!\n", $1);
+        } else if (strcmp(sim->tipo, $3.tipo) != 0) {
+            printf("Erro: atribuição incompatível! Variável '%s' é do tipo '%s', valor é do tipo '%s'.\n", $1, sim->tipo, $3.tipo);
+        } else {
+            printf("[ATRIB] %s = %s\n", $1, $3.valor);
+        }
     }
     ;
+
 
 print:
     ID LPAREN STRING COMMA ID RPAREN SEMICOLON {
@@ -119,20 +140,82 @@ do_while_loop:
     ;
 
 expr:
-    valor                   { $$ = $1; }
-  | ID                      { $$ = strdup($1); }
-  | expr OP_PLUS expr       { $$ = strdup("(expr+expr)"); }
-  | expr OP_MINUS expr      { $$ = strdup("(expr-expr)"); }
-  | expr OP_MUL expr        { $$ = strdup("(expr*expr)"); }
-  | expr OP_DIV expr        { $$ = strdup("(expr/expr)"); }
-  | expr OP_MOD expr        { $$ = strdup("(expr%expr)"); }
-  | LPAREN expr RPAREN      { $$ = $2; }
+      valor {
+          $$.valor = $1.valor;
+          $$.tipo  = $1.tipo;
+      }
+    | ID {
+          Simbolo* sim = buscar_simbolo($1);
+          if (!sim) {
+              printf("Erro: variável '%s' não declarada!\n", $1);
+              $$.tipo = "erro";
+          } else {
+              $$.tipo = sim->tipo;
+          }
+          $$.valor = strdup($1);
+      }
+    | expr OP_PLUS expr {
+          // Exemplo só para int e float
+          if (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "int") == 0)
+              $$.tipo = "int";
+          else if ((strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "int") == 0) ||
+                   (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "float") == 0) ||
+                   (strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "float") == 0))
+              $$.tipo = "float";
+          else
+              $$.tipo = "erro";
+          $$.valor = strdup("(expr+expr)");
+      }
+    | expr OP_MINUS expr {
+          if (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "int") == 0)
+              $$.tipo = "int";
+          else if ((strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "int") == 0) ||
+                   (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "float") == 0) ||
+                   (strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "float") == 0))
+              $$.tipo = "float";
+          else
+              $$.tipo = "erro";
+          $$.valor = strdup("(expr-expr)");
+      }
+    | expr OP_MUL expr {
+          if (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "int") == 0)
+              $$.tipo = "int";
+          else if ((strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "int") == 0) ||
+                   (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "float") == 0) ||
+                   (strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "float") == 0))
+              $$.tipo = "float";
+          else
+              $$.tipo = "erro";
+          $$.valor = strdup("(expr*expr)");
+      }
+    | expr OP_DIV expr {
+          if (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "int") == 0)
+              $$.tipo = "int";
+          else if ((strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "int") == 0) ||
+                   (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "float") == 0) ||
+                   (strcmp($1.tipo, "float") == 0 && strcmp($3.tipo, "float") == 0))
+              $$.tipo = "float";
+          else
+              $$.tipo = "erro";
+          $$.valor = strdup("(expr/expr)");
+      }
+    | expr OP_MOD expr {
+          if (strcmp($1.tipo, "int") == 0 && strcmp($3.tipo, "int") == 0)
+              $$.tipo = "int";
+          else
+              $$.tipo = "erro";
+          $$.valor = strdup("(expr%expr)");
+      }
+    | LPAREN expr RPAREN {
+          $$.valor = $2.valor;
+          $$.tipo  = $2.tipo;
+      }
     ;
 
 valor:
-    NUMBER   { $$ = $1; }
-  | CHAR     { $$ = $1; }
-  | STRING   { $$ = $1; }
+      NUMBER   { $$.valor = $1; $$.tipo = "int"; }
+    | CHAR     { $$.valor = $1; $$.tipo = "char"; }
+    | STRING   { $$.valor = $1; $$.tipo = "string"; }
     ;
 
 tipo:
@@ -147,4 +230,10 @@ tipo:
 
 void yyerror(const char *s) {
     fprintf(stderr, "Erro de sintaxe: %s\n", s);
+}
+
+int main(void) {
+    yyparse();
+    imprimirTabela();
+    return 0;
 }

@@ -25,12 +25,14 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ```bash
     flex lexer.l
     bison -d parser.y
-    gcc -o compiler lex.yy.c parser.tab.c -lfl
+    gcc -o compiler lex.yy.c parser.tab.c tabela.c -lfl
     ```
 
 2. Testar o fluxo léxico-sintático:
     ```bash
     ./compiler < teste.c
+    ./compiler < teste2.c
+    ./compiler < testeTabela.c
     ```
 
 

@@ -25,7 +25,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ```bash
     flex lexer.l
     bison -d parser.y
-    gcc -o compiler lex.yy.c parser.tab.c tabela.c -lfl
+    gcc parser.tab.c lex.yy.c ast.c tabela.c -o compiler -lfl
     ```
 
 2. Testar o fluxo léxico-sintático:
@@ -33,6 +33,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ./compiler < teste.c
     ./compiler < teste2.c
     ./compiler < testeTabela.c
+    ./compiler < testeAst.c
     ```
 
 

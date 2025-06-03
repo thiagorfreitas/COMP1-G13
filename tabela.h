@@ -10,9 +10,13 @@ typedef struct Simbolo {
 
 extern Simbolo* tabela;
 
+// Funções adicionadas para inicialização e liberação
+void inicializar_tabela();
+void liberar_tabela();
 
 void adicionar_simbolo(const char* nome, const char* tipo);
 Simbolo* buscar_simbolo(const char* nome);
 void imprimirTabela();
 
 #endif
+

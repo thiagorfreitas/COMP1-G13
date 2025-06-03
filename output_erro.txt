@@ -1,0 +1,3 @@
+Iniciando análise léxica/sintática/semântica...
+
+Análise falhou. Erros de sintaxe ou semântica encontrados.

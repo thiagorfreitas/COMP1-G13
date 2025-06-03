@@ -101,15 +101,59 @@ void emitir(OpCodeCG op, Endereco arg1, Endereco arg2, Endereco resultado) {
     }
 }
 
-// --- Função Principal de Geração de Código (Implementação Inicial/Parcial) ---
+// --- Função Auxiliar para Gerar Código de Condição --- 
+// Gera o código para uma expressão condicional e emite o salto apropriado
+// Retorna 1 se sucesso, 0 se erro
+int gerarCodigoCondicao(NoAST* condNode, Endereco labelDestino, int saltarSeFalso) {
+    if (!condNode) return 0;
 
-// Esta função percorrerá a AST e chamará 'emitir' para gerar o código.
-// Retorna o Endereco (geralmente temporário) onde o resultado da sub-árvore está.
+    // Caso 1: Condição é uma expressão relacional (ex: a < b)
+    if (condNode->tipo == AST_EXPR && condNode->n_filhos == 2 && 
+        (strcmp(condNode->valor, "==") == 0 || strcmp(condNode->valor, "!=") == 0 ||
+         strcmp(condNode->valor, "<") == 0 || strcmp(condNode->valor, ">") == 0 ||
+         strcmp(condNode->valor, "<=") == 0 || strcmp(condNode->valor, ">=") == 0)) 
+    {
+        Endereco cond_op1 = gerarCodigo(condNode->filhos[0]);
+        Endereco cond_op2 = gerarCodigo(condNode->filhos[1]);
+        if (cond_op1.tipo == ADDR_EMPTY || cond_op2.tipo == ADDR_EMPTY) return 0; // Erro nos operandos
+
+        OpCodeCG cond_opCode;
+        const char* opStr = condNode->valor;
+
+        // Determina o opcode de salto. Se saltarSeFalso=1, inverte a condição.
+        if (strcmp(opStr, "==") == 0) cond_opCode = saltarSeFalso ? CG_IF_NEQ : CG_IF_EQ;
+        else if (strcmp(opStr, "!=") == 0) cond_opCode = saltarSeFalso ? CG_IF_EQ : CG_IF_NEQ;
+        else if (strcmp(opStr, "<") == 0)  cond_opCode = saltarSeFalso ? CG_IF_GEQ : CG_IF_LT;
+        else if (strcmp(opStr, ">") == 0)  cond_opCode = saltarSeFalso ? CG_IF_LEQ : CG_IF_GT;
+        else if (strcmp(opStr, "<=") == 0) cond_opCode = saltarSeFalso ? CG_IF_GT : CG_IF_LEQ;
+        else /* (strcmp(opStr, ">=") == 0) */ cond_opCode = saltarSeFalso ? CG_IF_LT : CG_IF_GEQ;
+        
+        emitir(cond_opCode, cond_op1, cond_op2, labelDestino);
+        // liberarEndereco(cond_op1); // Não liberar se var/const
+        // liberarEndereco(cond_op2);
+        return 1;
+    } 
+    // TODO: Adicionar tratamento para operadores lógicos (&&, ||) com short-circuiting
+    else {
+        // Caso 2: Condição é uma variável ou valor simples (ex: while(x) ou if(1))
+        Endereco cond_val = gerarCodigo(condNode);
+        if (cond_val.tipo == ADDR_EMPTY) return 0; // Erro na expressão
+
+        // Salta se o valor for igual a 0 (falso em C)
+        OpCodeCG jumpOp = saltarSeFalso ? CG_IF_EQ : CG_IF_NEQ;
+        emitir(jumpOp, cond_val, criarEnderecoConstInt(0), labelDestino);
+        // liberarEndereco(cond_val); // Não liberar se var/const
+        return 1;
+    }
+}
+
+
+// --- Função Principal de Geração de Código --- 
+
 Endereco gerarCodigo(NoAST* no) {
     if (!no) return criarEnderecoVazio();
 
-    // Declarações movidas para o início da função ou dentro dos cases específicos
-    Endereco end1, end2, endRes, labelTrue, labelFalse, labelNext, labelBegin;
+    Endereco end1, end2, end3, end4, endRes, labelTrue, labelFalse, labelNext, labelBegin, labelCond, labelIncr, labelBody, labelEnd;
 
     switch (no->tipo) {
         case AST_BLOCO:
@@ -166,8 +210,9 @@ Endereco gerarCodigo(NoAST* no) {
                     return endRes;
                 }
                 // TODO: Adicionar outros unários ( !, ~, ++, --)
-                 fprintf(stderr, "Aviso: Geração de código para operador unário '%s' não implementada.\n", no->valor);
-                 return criarEnderecoVazio(); // Retorna erro para unários não tratados
+                // CORREÇÃO: fprintf em uma linha
+                fprintf(stderr, "Aviso: Geração de código para operador unário '%s' não implementada.\n", no->valor);
+                return criarEnderecoVazio(); // Retorna erro para unários não tratados
             } else { // Operador binário
                 end2 = gerarCodigo(no->filhos[1]);
                 if (end2.tipo == ADDR_EMPTY) {
@@ -176,7 +221,7 @@ Endereco gerarCodigo(NoAST* no) {
                 }
 
                 endRes = criarEnderecoTemp();
-                OpCodeCG opCode; // Usa OpCodeCG
+                OpCodeCG opCode;
                 int is_comparison = 0;
 
                 // Mapeia string do operador para OpCodeCG
@@ -185,14 +230,14 @@ Endereco gerarCodigo(NoAST* no) {
                 else if (strcmp(no->valor, "*") == 0) opCode = CG_MUL;
                 else if (strcmp(no->valor, "/") == 0) opCode = CG_DIV;
                 else if (strcmp(no->valor, "%") == 0) opCode = CG_MOD;
-                else if (strcmp(no->valor, "==") == 0) { opCode = CG_IF_EQ; is_comparison = 1; }
-                else if (strcmp(no->valor, "!=") == 0) { opCode = CG_IF_NEQ; is_comparison = 1; }
-                else if (strcmp(no->valor, "<") == 0)  { opCode = CG_IF_LT; is_comparison = 1; }
-                else if (strcmp(no->valor, ">") == 0)  { opCode = CG_IF_GT; is_comparison = 1; }
-                else if (strcmp(no->valor, "<=") == 0) { opCode = CG_IF_LEQ; is_comparison = 1; }
-                else if (strcmp(no->valor, ">=") == 0) { opCode = CG_IF_GEQ; is_comparison = 1; }
+                else if (strcmp(no->valor, "==") == 0 || strcmp(no->valor, "!=") == 0 ||
+                         strcmp(no->valor, "<") == 0 || strcmp(no->valor, ">") == 0 ||
+                         strcmp(no->valor, "<=") == 0 || strcmp(no->valor, ">=") == 0) {
+                    is_comparison = 1;
+                }
                 // TODO: Tratar && e || com short-circuiting
                 else {
+                    // CORREÇÃO: fprintf em uma linha
                     fprintf(stderr, "Aviso: Operador de expressão binária '%s' não suportado na geração de código.\n", no->valor);
                     // liberarEndereco(end1);
                     // liberarEndereco(end2);
@@ -204,8 +249,8 @@ Endereco gerarCodigo(NoAST* no) {
                 if (!is_comparison) {
                      emitir(opCode, end1, end2, endRes);
                 } else {
-                    // Para operadores relacionais, a geração é integrada com IF/WHILE.
-                    // Retornamos vazio aqui, pois a lógica de salto é feita no nó pai (IF/WHILE).
+                    // Para operadores relacionais, a geração é integrada com IF/WHILE/FOR.
+                    // Retornamos vazio aqui, pois a lógica de salto é feita no nó pai.
                     liberarEndereco(endRes); // Libera o temporário não usado neste caso
                     return criarEnderecoVazio(); 
                 }
@@ -214,46 +259,15 @@ Endereco gerarCodigo(NoAST* no) {
                 // liberarEndereco(end2);
                 return endRes;
             }
-            // break; // Removido pois todos os caminhos retornam
 
         case AST_IF:
-            // end1 = gerarCodigo(no->filhos[0]); // Condição - Não gera valor direto
             labelFalse = criarEnderecoLabel("L_IF_FALSE");
-
-            // Gerar código para a condição, que emitirá o salto apropriado
-            // Precisamos passar o label de destino para a geração da condição.
-            // Modificação necessária em gerarCodigo ou estrutura auxiliar.
-            // Abordagem atual (regerar operandos): 
-            if (no->filhos[0]->tipo == AST_EXPR && no->filhos[0]->n_filhos == 2) {
-                 Endereco cond_op1 = gerarCodigo(no->filhos[0]->filhos[0]);
-                 Endereco cond_op2 = gerarCodigo(no->filhos[0]->filhos[1]);
-                 OpCodeCG cond_opCode = CG_IF_EQ; // Default
-                 const char* opStr = no->filhos[0]->valor;
-                 int inverted = 1; // Salta se a condição for FALSA
-
-                 if (strcmp(opStr, "==") == 0) cond_opCode = CG_IF_NEQ; // Salta se != (falso)
-                 else if (strcmp(opStr, "!=") == 0) cond_opCode = CG_IF_EQ;  // Salta se == (falso)
-                 else if (strcmp(opStr, "<") == 0)  cond_opCode = CG_IF_GEQ; // Salta se >= (falso)
-                 else if (strcmp(opStr, ">") == 0)  cond_opCode = CG_IF_LEQ; // Salta se <= (falso)
-                 else if (strcmp(opStr, "<=") == 0) cond_opCode = CG_IF_GT;  // Salta se > (falso)
-                 else if (strcmp(opStr, ">=") == 0) cond_opCode = CG_IF_LT;  // Salta se < (falso)
-                 else { 
-                     fprintf(stderr, "Erro: Operador relacional inválido '%s' em IF.\n", opStr);
-                     inverted = 0; // Não emite salto se operador for inválido
-                 }
-                 
-                 if (inverted) emitir(cond_opCode, cond_op1, cond_op2, labelFalse); // Salta para labelFalse se condição FALSA
-                 // liberarEndereco(cond_op1);
-                 // liberarEndereco(cond_op2);
-            } else {
-                 // Se a condição for uma variável ou valor simples, compara com 0
-                 end1 = gerarCodigo(no->filhos[0]);
-                 emitir(CG_IF_EQ, end1, criarEnderecoConstInt(0), labelFalse); // Salta se end1 == 0
-                 // liberarEndereco(end1);
+            // Gera código para condição, salta para labelFalse se a condição for FALSA
+            if (!gerarCodigoCondicao(no->filhos[0], labelFalse, 1)) {
+                liberarEndereco(labelFalse);
+                return criarEnderecoVazio(); // Erro na condição
             }
-
             gerarCodigo(no->filhos[1]); // Corpo do IF (bloco then)
-
             emitir(CG_LABEL, labelFalse, criarEnderecoVazio(), criarEnderecoVazio()); // Define o label de saída
             // liberarEndereco(labelFalse); // Libera nome do label
             return criarEnderecoVazio();
@@ -261,43 +275,17 @@ Endereco gerarCodigo(NoAST* no) {
         case AST_IF_ELSE:
             labelFalse = criarEnderecoLabel("L_ELSE");
             labelNext = criarEnderecoLabel("L_IF_END");
-            // end1 = gerarCodigo(no->filhos[0]); // Condição - Não gera valor direto
-
-            // Gerar código para a condição, saltando para ELSE se for FALSA
-            if (no->filhos[0]->tipo == AST_EXPR && no->filhos[0]->n_filhos == 2) {
-                 Endereco cond_op1 = gerarCodigo(no->filhos[0]->filhos[0]);
-                 Endereco cond_op2 = gerarCodigo(no->filhos[0]->filhos[1]);
-                 OpCodeCG cond_opCode = CG_IF_EQ; // Default
-                 const char* opStr = no->filhos[0]->valor;
-                 int inverted = 1;
-
-                 if (strcmp(opStr, "==") == 0) cond_opCode = CG_IF_NEQ; 
-                 else if (strcmp(opStr, "!=") == 0) cond_opCode = CG_IF_EQ;  
-                 else if (strcmp(opStr, "<") == 0)  cond_opCode = CG_IF_GEQ; 
-                 else if (strcmp(opStr, ">") == 0)  cond_opCode = CG_IF_LEQ; 
-                 else if (strcmp(opStr, "<=") == 0) cond_opCode = CG_IF_GT;  
-                 else if (strcmp(opStr, ">=") == 0) cond_opCode = CG_IF_LT;  
-                 else { 
-                     fprintf(stderr, "Erro: Operador relacional inválido '%s' em IF-ELSE.\n", opStr);
-                     inverted = 0; 
-                 }
-                 
-                 if (inverted) emitir(cond_opCode, cond_op1, cond_op2, labelFalse); // Salta para ELSE se condição FALSA
-                 // liberarEndereco(cond_op1);
-                 // liberarEndereco(cond_op2);
-            } else {
-                 end1 = gerarCodigo(no->filhos[0]);
-                 emitir(CG_IF_EQ, end1, criarEnderecoConstInt(0), labelFalse); // Salta para ELSE se end1 == 0
-                 // liberarEndereco(end1);
+            // Gera código para condição, salta para labelFalse (ELSE) se a condição for FALSA
+            if (!gerarCodigoCondicao(no->filhos[0], labelFalse, 1)) {
+                liberarEndereco(labelFalse);
+                liberarEndereco(labelNext);
+                return criarEnderecoVazio(); // Erro na condição
             }
-
             gerarCodigo(no->filhos[1]); // Corpo do IF (bloco then)
             emitir(CG_GOTO, labelNext, criarEnderecoVazio(), criarEnderecoVazio()); // Salta para o fim após o THEN
-
             emitir(CG_LABEL, labelFalse, criarEnderecoVazio(), criarEnderecoVazio()); // Define o label do ELSE
             // liberarEndereco(labelFalse);
             gerarCodigo(no->filhos[2]); // Corpo do ELSE
-
             emitir(CG_LABEL, labelNext, criarEnderecoVazio(), criarEnderecoVazio()); // Define o label de fim
             // liberarEndereco(labelNext);
             return criarEnderecoVazio();
@@ -305,65 +293,122 @@ Endereco gerarCodigo(NoAST* no) {
         case AST_WHILE:
             labelBegin = criarEnderecoLabel("L_WHILE_BEGIN"); 
             labelFalse = criarEnderecoLabel("L_WHILE_END");
-
             emitir(CG_LABEL, labelBegin, criarEnderecoVazio(), criarEnderecoVazio()); // Label de início do loop
-
-            // Gerar código para a condição, saltando para FIM se for FALSA
-             if (no->filhos[0]->tipo == AST_EXPR && no->filhos[0]->n_filhos == 2) {
-                 Endereco cond_op1 = gerarCodigo(no->filhos[0]->filhos[0]);
-                 Endereco cond_op2 = gerarCodigo(no->filhos[0]->filhos[1]);
-                 OpCodeCG cond_opCode = CG_IF_EQ; // Default
-                 const char* opStr = no->filhos[0]->valor;
-                 int inverted = 1;
-
-                 if (strcmp(opStr, "==") == 0) cond_opCode = CG_IF_NEQ; 
-                 else if (strcmp(opStr, "!=") == 0) cond_opCode = CG_IF_EQ;  
-                 else if (strcmp(opStr, "<") == 0)  cond_opCode = CG_IF_GEQ; 
-                 else if (strcmp(opStr, ">") == 0)  cond_opCode = CG_IF_LEQ; 
-                 else if (strcmp(opStr, "<=") == 0) cond_opCode = CG_IF_GT;  
-                 else if (strcmp(opStr, ">=") == 0) cond_opCode = CG_IF_LT;  
-                 else { 
-                     fprintf(stderr, "Erro: Operador relacional inválido '%s' em WHILE.\n", opStr);
-                     inverted = 0; 
-                 }
-                 
-                 if (inverted) emitir(cond_opCode, cond_op1, cond_op2, labelFalse); // Salta para FIM se condição FALSA
-                 // liberarEndereco(cond_op1);
-                 // liberarEndereco(cond_op2);
-            } else {
-                 end1 = gerarCodigo(no->filhos[0]);
-                 emitir(CG_IF_EQ, end1, criarEnderecoConstInt(0), labelFalse); // Salta para FIM se end1 == 0
-                 // liberarEndereco(end1);
+            // Gera código para condição, salta para labelFalse (FIM) se a condição for FALSA
+            if (!gerarCodigoCondicao(no->filhos[0], labelFalse, 1)) {
+                liberarEndereco(labelBegin);
+                liberarEndereco(labelFalse);
+                return criarEnderecoVazio(); // Erro na condição
             }
-
             gerarCodigo(no->filhos[1]); // Corpo do WHILE
             emitir(CG_GOTO, labelBegin, criarEnderecoVazio(), criarEnderecoVazio()); // Volta para o início
-
             emitir(CG_LABEL, labelFalse, criarEnderecoVazio(), criarEnderecoVazio()); // Label de fim do loop
             // liberarEndereco(labelBegin);
             // liberarEndereco(labelFalse);
             return criarEnderecoVazio();
 
-        // --- Casos Adicionais (FOR, DO_WHILE, PRINT, etc.) --- 
-        // Precisam ser implementados de forma similar
+        case AST_FOR: // Assumindo filhos: 0=init, 1=cond, 2=incr, 3=body
+            if (no->n_filhos != 4) {
+                 fprintf(stderr, "Erro interno: Nó AST_FOR com número incorreto de filhos (%d).\n", no->n_filhos);
+                 return criarEnderecoVazio();
+            }
+            labelCond = criarEnderecoLabel("L_FOR_COND");
+            labelIncr = criarEnderecoLabel("L_FOR_INCR"); // Opcional, mas pode ser útil
+            labelBody = criarEnderecoLabel("L_FOR_BODY"); // Opcional
+            labelEnd = criarEnderecoLabel("L_FOR_END");
+
+            // 1. Inicialização
+            end1 = gerarCodigo(no->filhos[0]); // Gera código para init (ex: i = 0)
+            // if (end1.tipo == ADDR_TEMP) liberarEndereco(end1); // Libera se for temporário não usado
+
+            // 2. Label da Condição
+            emitir(CG_LABEL, labelCond, criarEnderecoVazio(), criarEnderecoVazio());
+
+            // 3. Teste da Condição
+            // Gera código para condição, salta para labelEnd se a condição for FALSA
+            if (!gerarCodigoCondicao(no->filhos[1], labelEnd, 1)) {
+                liberarEndereco(labelCond); liberarEndereco(labelIncr); 
+                liberarEndereco(labelBody); liberarEndereco(labelEnd);
+                return criarEnderecoVazio(); // Erro na condição
+            }
+            
+            // (Opcional: Pular para o corpo se a condição for verdadeira)
+            // emitir(CG_GOTO, labelBody, criarEnderecoVazio(), criarEnderecoVazio()); 
+
+            // 4. (Opcional) Label do Incremento - Colocado após o corpo
+            // emitir(CG_LABEL, labelIncr, criarEnderecoVazio(), criarEnderecoVazio());
+
+            // 5. Corpo do Loop
+            // emitir(CG_LABEL, labelBody, criarEnderecoVazio(), criarEnderecoVazio()); // Label do corpo
+            gerarCodigo(no->filhos[3]); // Gera código para o corpo
+
+            // 6. Incremento
+            end3 = gerarCodigo(no->filhos[2]); // Gera código para incr (ex: i = i + 1)
+            // if (end3.tipo == ADDR_TEMP) liberarEndereco(end3);
+
+            // 7. Volta para a Condição
+            emitir(CG_GOTO, labelCond, criarEnderecoVazio(), criarEnderecoVazio());
+
+            // 8. Label Final
+            emitir(CG_LABEL, labelEnd, criarEnderecoVazio(), criarEnderecoVazio());
+
+            // liberarEndereco(labelCond); liberarEndereco(labelIncr); 
+            // liberarEndereco(labelBody); liberarEndereco(labelEnd);
+            return criarEnderecoVazio();
+
+        case AST_DO_WHILE: // Assumindo filhos: 0=body, 1=cond
+             if (no->n_filhos != 2) {
+                 fprintf(stderr, "Erro interno: Nó AST_DO_WHILE com número incorreto de filhos (%d).\n", no->n_filhos);
+                 return criarEnderecoVazio();
+             }
+            labelBegin = criarEnderecoLabel("L_DOWHILE_BEGIN");
+            // labelCond = criarEnderecoLabel("L_DOWHILE_COND"); // Pode ser o mesmo que Begin
+
+            // 1. Label de Início
+            emitir(CG_LABEL, labelBegin, criarEnderecoVazio(), criarEnderecoVazio());
+
+            // 2. Corpo do Loop
+            gerarCodigo(no->filhos[0]);
+
+            // 3. Teste da Condição
+            // Gera código para condição, salta para labelBegin se a condição for VERDADEIRA
+            if (!gerarCodigoCondicao(no->filhos[1], labelBegin, 0)) { // saltarSeFalso = 0
+                liberarEndereco(labelBegin);
+                return criarEnderecoVazio(); // Erro na condição
+            }
+
+            // liberarEndereco(labelBegin);
+            return criarEnderecoVazio();
 
         case AST_PRINT:
-            // Simplificado: Assume que o valor é uma string literal passada no nó
-            if (no->valor) { // Se o nó PRINT tem um valor (string literal)
+            // Tratamento atual é muito simples (só string literal)
+            // TODO: Melhorar para lidar com expressões e formatação
+            if (no->valor && strcmp(no->tipoDado, "string") == 0) { 
                  end1 = criarEnderecoString(no->valor);
                  emitir(CG_PRINT, end1, criarEnderecoVazio(), criarEnderecoVazio());
                  // liberarEndereco(end1); // String é constante, não liberar aqui
             } else {
-                 // Se não tem valor, talvez devesse imprimir um filho? (não implementado)
-                 fprintf(stderr, "Aviso: AST_PRINT sem valor direto não implementado para codegen.\n");
+                 // Se for para imprimir uma variável ou expressão:
+                 end1 = gerarCodigo(no->filhos[0]); // Assumindo que o parser cria um filho para o argumento
+                 if(end1.tipo != ADDR_EMPTY) {
+                     emitir(CG_PRINT, end1, criarEnderecoVazio(), criarEnderecoVazio());
+                     // liberarEndereco(end1); // Não liberar se var/const
+                 } else {
+                     fprintf(stderr, "Aviso: AST_PRINT com argumento inválido ou não implementado para codegen.\n");
+                 }
             }
             return criarEnderecoVazio();
+        
+        // TODO: Adicionar AST_CALL para chamadas de função genéricas
+        // case AST_CALL:
+            // ... gerar código para argumentos (CG_PARAM)
+            // ... emitir CG_CALL
+            // ... retornar endereço do resultado (se houver)
 
         default:
             fprintf(stderr, "Aviso: Geração de código não implementada para o tipo de nó AST %d\n", no->tipo);
             return criarEnderecoVazio();
     }
-    // return criarEnderecoVazio(); // Removido, pois todos os cases retornam
 }
 
 // --- Funções de Impressão e Liberação ---
@@ -390,6 +435,7 @@ void imprimirEndereco(Endereco end) {
             printf("%s", end.val.varName ? end.val.varName : "(null)");
             break;
         case ADDR_CONST_STR:
+            // Imprime com aspas para clareza, mas o valor não as contém
             printf("\"%s\"", end.val.varName ? end.val.varName : "(null)");
             break;
     }

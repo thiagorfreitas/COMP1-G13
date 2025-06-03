@@ -83,7 +83,8 @@ const char* check_comparison_logical_types(const char* type1, const char* type2,
 
 %token SEMICOLON COMMA LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 
-%type <ast> programa lista_comandos comando declaracao_var atribuicao print bloco if_else while_loop for_loop do_while_loop expr valor
+// CORREÇÃO: Adicionar lista_args e lista_args_opcional ao %type
+%type <ast> programa lista_comandos comando declaracao_var atribuicao print bloco if_else while_loop for_loop do_while_loop expr valor lista_args lista_args_opcional
 %type <str> tipo
 
 /* Precedência e associatividade para expressões */
@@ -115,6 +116,7 @@ lista_comandos:
                 $1->filhos = filhos;
                 filhos[$1->n_filhos] = $2;
                 $1->n_filhos++;
+                $$ = $1; // Atualiza $$ para a lista modificada
             } else {
                 fprintf(stderr, "Erro: Falha ao realocar filhos da AST.\n");
                 // Tratar erro de alocação se necessário (liberar $1?)
@@ -193,16 +195,55 @@ atribuicao:
     ;
 
 
+// CORREÇÃO: Modificar regra 'print' para aceitar argumentos variáveis
+print:
+    ID LPAREN STRING lista_args_opcional RPAREN SEMICOLON {
+        // Verificar se ID é 'printf' ou similar poderia ser feito aqui
+        // Criar nó AST_PRINT. O primeiro filho ($3) é a string de formato.
+        // Os filhos subsequentes vêm da lista_args_opcional ($4).
+        NoAST* format_str_node = criarNo(AST_STRING, $3, "string", 0);
+        NoAST* args_node = $4; // $4 é a lista de argumentos (pode ser NULL)
+        int num_args = args_node ? args_node->n_filhos : 0;
+        
+        // Cria o nó AST_PRINT com a string de formato como primeiro filho
+        $$ = criarNo(AST_PRINT, NULL, NULL, 1 + num_args, format_str_node);
+        
+        // Adiciona os argumentos da lista como filhos restantes
+        if (args_node) {
+            for (int i = 0; i < num_args; i++) {
+                adicionarFilho($$, args_node->filhos[i]);
+            }
+            liberarNo(args_node); // Libera o nó temporário da lista de args
+        }
+        
+        free($1); // Libera ID (ex: "printf")
+        // Não liberar $3 (string), pois foi usado em format_str_node
+    }
+    ;
 
-print: /* Simplificado - Apenas imprime string literal por enquanto */
-    ID LPAREN STRING RPAREN SEMICOLON {
-        // No futuro, poderia verificar se ID é uma função 'printf'
-        // printf("[PRINT] String: %s\n", $3);
-        // Modificado para gerar código intermediário, não criar nó AST direto para print
-        // A geração de código para PRINT será feita em codegen.c
-        // Aqui, apenas validamos a estrutura (poderia ser mais complexo)
-        $$ = criarNo(AST_PRINT, $3, "string", 0); // Nó temporário para info
-        free($1); // free($3); // $3 é usado no nó
+// CORREÇÃO: Nova regra para lista opcional de argumentos (inicia com vírgula)
+lista_args_opcional:
+    /* vazio */ { $$ = NULL; } 
+    | COMMA lista_args { $$ = $2; } 
+    ;
+
+// CORREÇÃO: Nova regra para lista de argumentos (expressões separadas por vírgula)
+lista_args:
+    expr { 
+        // Cria um nó temporário (ex: AST_LISTA_ARGS) para guardar o argumento
+        $$ = criarNo(AST_LISTA_ARGS, NULL, NULL, 1, $1);
+    }
+    | lista_args COMMA expr {
+        // Adiciona a nova expressão à lista existente
+        if ($1 && $3) { // Verifica se não houve erro
+             adicionarFilho($1, $3);
+             $$ = $1;
+        } else {
+             // Propaga erro se $1 ou $3 for inválido
+             if ($1) liberarNo($1); // Libera lista parcial se o novo arg falhou
+             $$ = NULL;
+             // YYERROR já deve ter sido chamado
+        }
     }
     ;
 
@@ -378,102 +419,81 @@ expr:
           if (strcmp(tipo_result, "erro") == 0) { $$ = criarNo(AST_EXPR, "||", "erro", 2, $1, $3); YYERROR; }
           else $$ = criarNo(AST_EXPR, "||", (char*)tipo_result, 2, $1, $3);
       }
-    | OP_NOT expr { // !
-          if (!$2 || strcmp($2->tipoDado, "erro") == 0) { 
-              $$ = criarNo(AST_EXPR, "!", "erro", 1, $2); // Propaga erro
-              // YYERROR já chamado
-          } else if (strcmp($2->tipoDado, "int") != 0 && strcmp($2->tipoDado, "float") != 0) {
-               fprintf(stderr, "Erro Semântico: Operador '!' requer operando numérico ou booleano, obteve '%s'.\n", $2->tipoDado);
-               $$ = criarNo(AST_EXPR, "!", "erro", 1, $2);
-               YYERROR;
+    | OP_MINUS expr %prec OP_NOT { /* Unário Menos */
+          if (!$2 || strcmp($2->tipoDado, "erro") == 0) { $$ = criarNo(AST_EXPR, "-", "erro", 1, $2); YYERROR; }
+          else if (strcmp($2->tipoDado, "int") != 0 && strcmp($2->tipoDado, "float") != 0) {
+             fprintf(stderr, "Erro Semântico: Operador unário '-' requer operando numérico, obteve '%s'.\n", $2->tipoDado);
+             $$ = criarNo(AST_EXPR, "-", "erro", 1, $2); YYERROR;
           } else {
-               $$ = criarNo(AST_EXPR, "!", "int", 1, $2); // Resultado é booleano (int)
+             $$ = criarNo(AST_EXPR, "-", $2->tipoDado, 1, $2);
           }
       }
-    | LPAREN expr RPAREN { $$ = $2; }
+    | OP_NOT expr { /* Negação Lógica */
+          if (!$2 || strcmp($2->tipoDado, "erro") == 0) { $$ = criarNo(AST_EXPR, "!", "erro", 1, $2); YYERROR; }
+          else if (strcmp($2->tipoDado, "int") != 0 && strcmp($2->tipoDado, "float") != 0) { // Permitir ! em float?
+             fprintf(stderr, "Erro Semântico: Operador '!' requer operando numérico/booleano, obteve '%s'.\n", $2->tipoDado);
+             $$ = criarNo(AST_EXPR, "!", "erro", 1, $2); YYERROR;
+          } else {
+             $$ = criarNo(AST_EXPR, "!", "int", 1, $2); // Resultado é booleano (int)
+          }
+      }
+    | LPAREN expr RPAREN { $$ = $2; } /* Parênteses */
     ;
 
 valor:
-      NUMBER   {
-          // Determina se é int ou float (simplificado: assume int se não houver '.')
-          char* tipo = (strchr($1, '.') == NULL) ? "int" : "float";
-          $$ = criarNo(AST_NUM, $1, tipo, 0);
-          // free($1); // Não liberar $1 aqui, pois é usado em criarNo (strdup feito lá)
-      }
-    | CHAR     { $$ = criarNo(AST_CHAR, $1, "char", 0); /* free($1); */ }
-    | STRING   { $$ = criarNo(AST_STRING, $1, "string", 0); /* free($1); */ }
+    NUMBER {
+        // Determina se é int ou float
+        if (strchr($1, '.') || strchr($1, 'e') || strchr($1, 'E')) {
+            $$ = criarNo(AST_NUM, $1, "float", 0);
+        } else {
+            $$ = criarNo(AST_NUM, $1, "int", 0);
+        }
+        free($1); // Libera memória do número
+    }
+    | CHAR {
+        $$ = criarNo(AST_CHAR, $1, "char", 0);
+        free($1); // Libera memória do char
+    }
     ;
 
 tipo:
-    KW_INT     { $$ = "int"; }
-  | KW_FLOAT   { $$ = "float"; }
-  | KW_CHAR    { $$ = "char"; }
-  | KW_DOUBLE  { $$ = "double"; } /* Tratado como float por simplicidade */
-  | KW_VOID    { $$ = "void"; }
+    KW_INT { $$ = "int"; }
+    | KW_FLOAT { $$ = "float"; }
+    | KW_CHAR { $$ = "char"; }
+    | KW_VOID { $$ = "void"; }
     ;
 
 %%
 
-// Declaração externa para yylineno (se o lexer o fornecer)
-extern int yylineno;
-
 void yyerror(const char *s) {
-    // Adiciona número da linha ao erro
+    extern int yylineno;
     fprintf(stderr, "Erro (Linha %d): %s\n", yylineno, s);
 }
 
-// Função para liberar a AST recursivamente
-void freeAST(NoAST* no) {
-    if (!no) return;
-    for (int i = 0; i < no->n_filhos; i++) {
-        freeAST(no->filhos[i]);
-    }
-    if (no->valor) free(no->valor);
-    if (no->tipoDado) free(no->tipoDado);
-    if (no->filhos) free(no->filhos);
-    free(no);
-}
-
-
-// Função principal - Modificada para chamar geração de código
+// Função principal (exemplo)
 int main(void) {
-    int parse_result;
-    inicializar_tabela(); // Garante que a tabela está vazia
-    printf("Iniciando análise léxica/sintática/semântica...\n");
-    
-    parse_result = yyparse(); // yyparse retorna 0 em sucesso, 1 em erro sintático, 2 em falta de memória
+    inicializar_tabela();
+    printf("Iniciando análise...\n");
+    if (yyparse() == 0) {
+        printf("Análise sintática concluída com sucesso.\n");
+        if (raizAST) {
+            printf("\n---- Árvore Sintática Abstrata (AST) ----\n");
+            imprimirAST(raizAST, 0);
+            printf("----------------------------------------\n");
+            
+            // Geração de Código Intermediário
+            gerarCodigo(raizAST);
+            imprimirCodigoIntermediario();
+            liberarCodigoIntermediario(); // Libera memória das quádruplas
 
-    if (parse_result == 0 && raizAST != NULL) { 
-        printf("\nAnálise Sintática/Semântica concluída com sucesso.\n");
-        
-        // Imprimir Tabela de Símbolos e AST (opcional, para debug)
-        // printf("\n---- Tabela de Símbolos Final ----\n");
-        // imprimirTabela();
-        // printf("\n---- Árvore Sintática Abstrata (AST) ----\n");
-        // imprimirAST(raizAST, 0);
-
-        // Gerar Código Intermediário
-        printf("\nIniciando geração de código intermediário...\n");
-        gerarCodigo(raizAST); // Percorre a AST e preenche a lista de quádruplas
-        imprimirCodigoIntermediario(); // Imprime as quádruplas geradas
-        liberarCodigoIntermediario(); // Libera memória do código gerado
-
-    } else {
-        printf("\nAnálise falhou. Erros de sintaxe ou semântica encontrados.\n");
-        if (parse_result == 1) {
-             fprintf(stderr, "Erro: Falha na análise sintática.\n");
-        } else if (parse_result == 2) {
-             fprintf(stderr, "Erro: Memória insuficiente durante a análise.\n");
+            liberarAST(raizAST); // Libera memória da AST
+        } else {
+            printf("(Nenhuma AST gerada - possivelmente entrada vazia ou erro fatal)\n");
         }
+    } else {
+        fprintf(stderr, "Erro: Falha na análise sintática.\n");
     }
-
-    liberar_tabela(); // Liberar memória da tabela de símbolos
-    if (raizAST) {
-        // freeAST(raizAST); // Liberar memória da AST
-        // TODO: Implementar freeAST corretamente
-    }
-    
-    return (parse_result == 0 && raizAST != NULL) ? 0 : 1; // Retorna 0 em sucesso, 1 em erro
+    liberar_tabela();
+    return 0;
 }
-
 

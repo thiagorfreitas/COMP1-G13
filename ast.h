@@ -15,7 +15,8 @@ typedef enum {
     AST_ID,
     AST_NUM,
     AST_CHAR,
-    AST_STRING
+    AST_STRING,
+    AST_LISTA_ARGS
 } TipoAST;
 
 typedef struct NoAST {
@@ -27,6 +28,9 @@ typedef struct NoAST {
 } NoAST;
 
 NoAST* criarNo(TipoAST tipo, char* valor, char* tipoDado, int n_filhos, ...);
+void adicionarFilho(NoAST* pai, NoAST* filho);
+void liberarNo(NoAST* no);
+void liberarAST(NoAST* raiz);
 void imprimirAST(NoAST* no, int nivel);
 
 

@@ -1,0 +1,28 @@
+Iniciando análise léxica/sintática/semântica...
+
+Análise Sintática/Semântica concluída com sucesso.
+
+Iniciando geração de código intermediário...
+
+---- Código Intermediário (Quádruplas) ----
+  0: ASSIGN a = 10
+  1: ASSIGN b = 5.50
+  2: ADD    t0 = a + 5
+  3: ASSIGN c = t0
+  4: MUL    t1 = b * 2.00
+  5: ASSIGN b = t1
+  6: MOD    t2 = c % 3
+  7: ASSIGN a = t2
+  8: IF_GEQ a >= c GOTO L_ELSE0
+  9: ASSIGN b = 1.00
+ 10: GOTO   L_IF_END1
+ 11: LABEL  L_ELSE0:
+ 12: ASSIGN a = 0
+ 13: LABEL  L_IF_END1:
+ 14: LABEL  L_WHILE_BEGIN2:
+ 15: IF_LEQ a <= 0 GOTO L_WHILE_END3
+ 16: SUB    t3 = a - 1
+ 17: ASSIGN a = t3
+ 18: GOTO   L_WHILE_BEGIN2
+ 19: LABEL  L_WHILE_END3:
+----------------------------------------

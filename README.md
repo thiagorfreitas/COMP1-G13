@@ -1,5 +1,9 @@
 # Compiladores 1 - Grupo 13 - CToPy
 
+<center>
+<img src="assets/project_logo.png" alt="Logo do Projeto" width="200"/>
+</center>
+
 ## O projeto
 
 O projeto foi desenvolvido por alunos do curso de Engenharia de Software, do Grupo 13 da disciplina de Compiladores 1 ofertada na Universidade de Brasília (UnB) - Campus FCTE, e tem como objetivo principal a construção de um compilador simples que converte código C para Python. O projeto é uma aplicação prática dos conceitos aprendidos na disciplina e visa proporcionar uma experiência enriquecedora no desenvolvimento de software.

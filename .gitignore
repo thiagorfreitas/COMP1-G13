@@ -2,3 +2,7 @@ parser.tab.c
 parser.tab.h
 compiler
 lex.yy.c
+compilador
+compilador.o
+compilador.tab.c
+compilador.tab.h

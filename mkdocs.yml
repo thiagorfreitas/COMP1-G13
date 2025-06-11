@@ -1,0 +1,37 @@
+repo_url: https://github.com/thiagorfreitas/COMP1-G13
+repo_name: Compiladores_G13
+site_url: https://github.com/thiagorfreitas/COMP1-G13
+
+site_name: Compiladores G13
+nav:
+  - Inicio: "docs/index.md"
+  - Entrega 1:
+    - Linguagem de Origem/Destino: "docs/linguagem.md"
+    - Tipo de Projeto: "docs/tipo_projeto.md"
+    - Metodologia de Planejamento: "docs/metodologia_planejamento.md"
+    - Partes Já Implementadas: "docs/partes_ja_implementadas.md"
+    - Resumo do Progresso Técnico: "docs/resumo_progresso_tecnico.md"
+  - Entrega 2:
+    - Progresso e Técnica: "docs/progresso_tecnica.md"
+    - Planejamento e Destaques: "docs/planejamento_destaques.md"
+theme:
+  name: material
+  logo: assets/project_logo.png
+  icon: material/code-tags
+  favicon: assets/imagens/logo.png
+  features:
+    - navigation.tabs
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+      primary: green
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+      primary: green

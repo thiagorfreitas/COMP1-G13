@@ -83,12 +83,16 @@ Abaixo está o cronograma das sprints do projeto, detalhando as datas de início
 
 | Sprint | Data de Início | Data de Término | Descrição |
 | :----: | :------------: | :-------------: | :-------: |
-|   1    |   01/03/2025   |    15/03/2025   | Estudo e nivelamento da equipe nas ferramentas utilizadas, definição do escopo do projeto |
-|   2    |   16/03/2025   |    30/03/2025   | Implementação inicial do analisador léxico |
-|   3    |   01/04/2025   |    15/04/2025   | Implementação inicial do analisador sintático e testes inciais |
-|   4    |   16/04/2025   |    30/04/2025   | Implementação da árvore de sintaxe abstrata (AST) e tabela de símbolos |
-|   5    |   01/05/2025   |    15/05/2025   | Implementação da análise semântica e geração de código intermediário |
-|   6    |   16/05/2025   |    30/05/2025   | Testes finais, correção de bugs e documentação do projeto |
+|   1    |   26/03/2025   |    02/04/2025   | Estudo e nivelamento da equipe nas ferramentas utilizadas |
+|   2    |   02/04/2025   |    09/04/2025   | Configurações iniciais do projeto e definição do escopo do projeto |
+|   3    |   09/04/2025   |    16/04/2025   | Implementação inicial do analisador sintático e testes inciais |
+|   4    |   16/04/2025   |    23/04/2025   | Implementacao do analisador léxico e preparação para a primeira entrega |
+|   5    |   23/04/2025   |    08/05/2025   | Implementação da análise semântica |
+|   6    |   09/05/2025   |    23/05/2025   | Implementação da tabela de símbolos |
+|   7    |   23/05/2025   |    02/06/2025   | Implementação da geração de código intermediário e testes para a segunda entrega |
+|   8    |   02/06/2025   |    09/06/2025   | Atualização da documentação do projeto |
+|   9    |   09/06/2025   |    16/06/2025   | Implementação da geração de código Python final e testes finais |
+|  10    |   16/06/2025   |    23/06/2025   | Otimização do código e ajustes para a entrega final |
 
 </center>
 
@@ -101,6 +105,7 @@ Abaixo está o cronograma das sprints do projeto, detalhando as datas de início
 | Versão |    Data    |                      Descrição                      |      Autor(es)      |
 | :----: | :--------: | :-------------------------------------------------: | :-----------------: |
 |  1.0   | 23/04/2025 | Versão inicial de documento de descrição do projeto | [Thiago Freitas](https://github.com/thiagorfreitas) |
-|  2.0  | 30/04/2025 | Atualização do README com informações sobre a metodologia, sprints, e escopo | [Thiago Freitas](https://github.com/thiagorfreitas) |
+|  2.0  | 09/06/2025 | Atualização do README com informações sobre a metodologia, sprints, e escopo | [Thiago Freitas](https://github.com/thiagorfreitas) |
+|  3.0  | 11/06/2025 | Atualização do README com informações sobre o cronograma e funcionalidades implementadas | [Thiago Freitas](https://github.com/thiagorfreitas) |
 
 </center>

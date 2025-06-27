@@ -63,6 +63,15 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     python3 quad_to_python.py quads_teste_c.txt > programa.py
     ```
 
+4. Gerar código Python de um teste e testar
+    ```bash
+    ./compiler < teste/teste.c > teste/test.txt
+    python3 quad_to_python.py teste/test.txt > teste/teste.py
+    python3 teste/teste.py
+     # Saída esperada:
+     # Idade: 25
+    ```
+
 ## Contribuidores
 
 <table>

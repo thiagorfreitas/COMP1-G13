@@ -160,7 +160,22 @@ def translate_quads_to_python(quad_lines):
         elif opcode == "UMINUS":
             line_py = f"{indent_str}{format_operand(result)} = -{format_operand(args[0])}"
         elif opcode == "PRINT":
-            line_py = f"{indent_str}print({format_operand(args[0])})"
+            orig = quad["original"]              # ex: '1: PRINT  ""Idade: %d"", idade'
+            raw = orig.split("PRINT", 1)[1].strip()
+            if ',' in raw:
+                lit_raw, var = raw.split(",", 1)
+                var = var.strip()
+            else:
+                lit_raw, var = raw, None
+
+            
+            inner = lit_raw.strip().strip('"')   # -> Idade: %d
+            fmt = f'"{inner}"'                   # -> '"Idade: %d"'
+
+            if var:
+                line_py = f"{indent_str}print({fmt} % {var})"
+            else:
+                line_py = f"{indent_str}print({fmt})"
         elif opcode == "LABEL":
             # Handled above by adding a comment marker
             continue # Don't generate a separate line for the quad itself

@@ -380,24 +380,24 @@ Endereco gerarCodigo(NoAST* no) {
             // liberarEndereco(labelBegin);
             return criarEnderecoVazio();
 
-        case AST_PRINT:
-            // Tratamento atual é muito simples (só string literal)
-            // TODO: Melhorar para lidar com expressões e formatação
-            if (no->valor && strcmp(no->tipoDado, "string") == 0) { 
-                 end1 = criarEnderecoString(no->valor);
-                 emitir(CG_PRINT, end1, criarEnderecoVazio(), criarEnderecoVazio());
-                 // liberarEndereco(end1); // String é constante, não liberar aqui
-            } else {
-                 // Se for para imprimir uma variável ou expressão:
-                 end1 = gerarCodigo(no->filhos[0]); // Assumindo que o parser cria um filho para o argumento
-                 if(end1.tipo != ADDR_EMPTY) {
-                     emitir(CG_PRINT, end1, criarEnderecoVazio(), criarEnderecoVazio());
-                     // liberarEndereco(end1); // Não liberar se var/const
-                 } else {
-                     fprintf(stderr, "Aviso: AST_PRINT com argumento inválido ou não implementado para codegen.\n");
-                 }
+        case AST_PRINT: {
+            // Se vier com 2 filhos: [0]=string literal, [1]=expressão/variável
+            if (no->n_filhos == 2) {
+                Endereco strEnd = gerarCodigo(no->filhos[0]);  // AST_STRING → const str
+                Endereco valEnd = gerarCodigo(no->filhos[1]);  // AST_ID ou expressão
+                emitir(CG_PRINT, strEnd, valEnd, criarEnderecoVazio());
+            }
+            // Se só 1 filho (ex.: print de expressão sem formatação)
+            else if (no->n_filhos == 1) {
+                Endereco arg = gerarCodigo(no->filhos[0]);
+                emitir(CG_PRINT, arg, criarEnderecoVazio(), criarEnderecoVazio());
+            }
+            else {
+                fprintf(stderr, "Aviso: PRINT com aridade %d não suportado\n", no->n_filhos);
             }
             return criarEnderecoVazio();
+        }
+
         
         // TODO: Adicionar AST_CALL para chamadas de função genéricas
         // case AST_CALL:
@@ -467,7 +467,7 @@ void imprimirCodigoIntermediario() {
             case CG_IF_GT:  printf("IF_GT  "); imprimirEndereco(atual->arg1); printf(" >  "); imprimirEndereco(atual->arg2); printf(" GOTO "); imprimirEndereco(atual->resultado); break;
             case CG_IF_LEQ: printf("IF_LEQ "); imprimirEndereco(atual->arg1); printf(" <= "); imprimirEndereco(atual->arg2); printf(" GOTO "); imprimirEndereco(atual->resultado); break;
             case CG_IF_GEQ: printf("IF_GEQ "); imprimirEndereco(atual->arg1); printf(" >= "); imprimirEndereco(atual->arg2); printf(" GOTO "); imprimirEndereco(atual->resultado); break;
-            case CG_PRINT:  printf("PRINT  "); imprimirEndereco(atual->arg1); break;
+            case CG_PRINT:  printf("PRINT  "); imprimirEndereco(atual->arg1); if (atual->arg2.tipo != ADDR_EMPTY) { printf(", "); imprimirEndereco(atual->arg2); }break;
             // Adicionar outros opcodes (CG_PARAM, CG_CALL, CG_RETURN)
             default: printf("OP_CG_%d ?", atual->op); break;
         }

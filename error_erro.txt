@@ -1,2 +1,0 @@
-Erro Semântico: Variável 'a' já declarada neste escopo.
-Erro: Falha na análise sintática.

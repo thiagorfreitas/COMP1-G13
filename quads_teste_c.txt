@@ -2,45 +2,83 @@ Iniciando análise...
 Análise sintática concluída com sucesso.
 
 ---- Árvore Sintática Abstrata (AST) ----
-Tipo: 8
-  Tipo: 0, Valor: a, TipoDado: int
-  Tipo: 0, Valor: b, TipoDado: float
-  Tipo: 0, Valor: c, TipoDado: int
-  Tipo: 1, Valor: a, TipoDado: int
-    Tipo: 11, Valor: 10, TipoDado: int
-  Tipo: 1, Valor: b, TipoDado: float
-    Tipo: 11, Valor: 5.5, TipoDado: float
-  Tipo: 1, Valor: c, TipoDado: int
-    Tipo: 9, Valor: +, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 11, Valor: 5, TipoDado: int
-  Tipo: 1, Valor: b, TipoDado: float
-    Tipo: 9, Valor: *, TipoDado: float
-      Tipo: 10, Valor: b, TipoDado: float
-      Tipo: 11, Valor: 2.0, TipoDado: float
-  Tipo: 1, Valor: a, TipoDado: int
-    Tipo: 9, Valor: %, TipoDado: int
-      Tipo: 10, Valor: c, TipoDado: int
-      Tipo: 11, Valor: 3, TipoDado: int
-  Tipo: 4
-    Tipo: 9, Valor: <, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 10, Valor: c, TipoDado: int
-    Tipo: 8
-      Tipo: 1, Valor: b, TipoDado: float
-        Tipo: 11, Valor: 1.0, TipoDado: float
-    Tipo: 8
-      Tipo: 1, Valor: a, TipoDado: int
-        Tipo: 11, Valor: 0, TipoDado: int
-  Tipo: 5
-    Tipo: 9, Valor: >, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 11, Valor: 0, TipoDado: int
-    Tipo: 8
-      Tipo: 1, Valor: a, TipoDado: int
-        Tipo: 9, Valor: -, TipoDado: int
-          Tipo: 10, Valor: a, TipoDado: int
-          Tipo: 11, Valor: 1, TipoDado: int
+Node 0x13ce05a50 → Tipo: 8, n_filhos: 10
+─ filho[0] ptr: 0x13ce05cd0
+  Node 0x13ce05cd0 → Tipo: 0, n_filhos: 0, Valor: a, TipoDado: int
+─ filho[1] ptr: 0x13ce05ad0
+  Node 0x13ce05ad0 → Tipo: 0, n_filhos: 0, Valor: b, TipoDado: float
+─ filho[2] ptr: 0x13ce05de0
+  Node 0x13ce05de0 → Tipo: 0, n_filhos: 0, Valor: c, TipoDado: int
+─ filho[3] ptr: 0x13ce05e90
+  Node 0x13ce05e90 → Tipo: 1, n_filhos: 1, Valor: a, TipoDado: int
+  ─ filho[0] ptr: 0x13ce05e40
+    Node 0x13ce05e40 → Tipo: 11, n_filhos: 0, Valor: 10, TipoDado: int
+─ filho[4] ptr: 0x13ce05f40
+  Node 0x13ce05f40 → Tipo: 1, n_filhos: 1, Valor: b, TipoDado: float
+  ─ filho[0] ptr: 0x13ce05ef0
+    Node 0x13ce05ef0 → Tipo: 11, n_filhos: 0, Valor: 5.5, TipoDado: float
+─ filho[5] ptr: 0x13ce060a0
+  Node 0x13ce060a0 → Tipo: 1, n_filhos: 1, Valor: c, TipoDado: int
+  ─ filho[0] ptr: 0x13ce06050
+    Node 0x13ce06050 → Tipo: 9, n_filhos: 2, Valor: +, TipoDado: int
+    ─ filho[0] ptr: 0x13ce05fd0
+      Node 0x13ce05fd0 → Tipo: 10, n_filhos: 0, Valor: a, TipoDado: int
+    ─ filho[1] ptr: 0x13ce06020
+      Node 0x13ce06020 → Tipo: 11, n_filhos: 0, Valor: 5, TipoDado: int
+─ filho[6] ptr: 0x13ce06200
+  Node 0x13ce06200 → Tipo: 1, n_filhos: 1, Valor: b, TipoDado: float
+  ─ filho[0] ptr: 0x13ce061b0
+    Node 0x13ce061b0 → Tipo: 9, n_filhos: 2, Valor: *, TipoDado: float
+    ─ filho[0] ptr: 0x13ce06110
+      Node 0x13ce06110 → Tipo: 10, n_filhos: 0, Valor: b, TipoDado: float
+    ─ filho[1] ptr: 0x13ce06160
+      Node 0x13ce06160 → Tipo: 11, n_filhos: 0, Valor: 2.0, TipoDado: float
+─ filho[7] ptr: 0x13ce06370
+  Node 0x13ce06370 → Tipo: 1, n_filhos: 1, Valor: a, TipoDado: int
+  ─ filho[0] ptr: 0x13ce06320
+    Node 0x13ce06320 → Tipo: 9, n_filhos: 2, Valor: %, TipoDado: int
+    ─ filho[0] ptr: 0x13ce05f90
+      Node 0x13ce05f90 → Tipo: 10, n_filhos: 0, Valor: c, TipoDado: int
+    ─ filho[1] ptr: 0x13ce062d0
+      Node 0x13ce062d0 → Tipo: 11, n_filhos: 0, Valor: 3, TipoDado: int
+─ filho[8] ptr: 0x13ce066a0
+  Node 0x13ce066a0 → Tipo: 4, n_filhos: 3
+  ─ filho[0] ptr: 0x13ce06470
+    Node 0x13ce06470 → Tipo: 9, n_filhos: 2, Valor: <, TipoDado: int
+    ─ filho[0] ptr: 0x13ce063d0
+      Node 0x13ce063d0 → Tipo: 10, n_filhos: 0, Valor: a, TipoDado: int
+    ─ filho[1] ptr: 0x13ce06420
+      Node 0x13ce06420 → Tipo: 10, n_filhos: 0, Valor: c, TipoDado: int
+  ─ filho[1] ptr: 0x13ce06580
+    Node 0x13ce06580 → Tipo: 8, n_filhos: 1
+    ─ filho[0] ptr: 0x13ce06530
+      Node 0x13ce06530 → Tipo: 1, n_filhos: 1, Valor: b, TipoDado: float
+      ─ filho[0] ptr: 0x13ce064e0
+        Node 0x13ce064e0 → Tipo: 11, n_filhos: 0, Valor: 1.0, TipoDado: float
+  ─ filho[2] ptr: 0x13ce06670
+    Node 0x13ce06670 → Tipo: 8, n_filhos: 1
+    ─ filho[0] ptr: 0x13ce06620
+      Node 0x13ce06620 → Tipo: 1, n_filhos: 1, Valor: a, TipoDado: int
+      ─ filho[0] ptr: 0x13ce065d0
+        Node 0x13ce065d0 → Tipo: 11, n_filhos: 0, Valor: 0, TipoDado: int
+─ filho[9] ptr: 0x13ce069a0
+  Node 0x13ce069a0 → Tipo: 5, n_filhos: 2
+  ─ filho[0] ptr: 0x13ce067b0
+    Node 0x13ce067b0 → Tipo: 9, n_filhos: 2, Valor: >, TipoDado: int
+    ─ filho[0] ptr: 0x13ce06750
+      Node 0x13ce06750 → Tipo: 10, n_filhos: 0, Valor: a, TipoDado: int
+    ─ filho[1] ptr: 0x13ce06260
+      Node 0x13ce06260 → Tipo: 11, n_filhos: 0, Valor: 0, TipoDado: int
+  ─ filho[1] ptr: 0x13ce06970
+    Node 0x13ce06970 → Tipo: 8, n_filhos: 1
+    ─ filho[0] ptr: 0x13ce06910
+      Node 0x13ce06910 → Tipo: 1, n_filhos: 1, Valor: a, TipoDado: int
+      ─ filho[0] ptr: 0x13ce068c0
+        Node 0x13ce068c0 → Tipo: 9, n_filhos: 2, Valor: -, TipoDado: int
+        ─ filho[0] ptr: 0x13ce06820
+          Node 0x13ce06820 → Tipo: 10, n_filhos: 0, Valor: a, TipoDado: int
+        ─ filho[1] ptr: 0x13ce06870
+          Node 0x13ce06870 → Tipo: 11, n_filhos: 0, Valor: 1, TipoDado: int
 ----------------------------------------
 
 ---- Código Intermediário (Quádruplas) ----

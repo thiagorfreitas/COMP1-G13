@@ -52,10 +52,10 @@ Certifique-se de ter as seguintes ferramentas instaladas:
 
 2. Testar o fluxo léxico-sintático:
     ```bash
-    ./compiler < teste.c
-    ./compiler < teste2.c
-    ./compiler < testeTabela.c
-    ./compiler < testeAst.c
+    ./compiler < teste/teste.c
+    ./compiler < teste/teste2.c
+    ./compiler < teste/testeTabela.c
+    ./compiler < teste/testeAst.c
     ```
 
 3.  Gerar código Python

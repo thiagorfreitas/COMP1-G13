@@ -27,11 +27,10 @@ typedef struct NoAST {
     int n_filhos;
 } NoAST;
 
-NoAST* criarNo(TipoAST tipo, char* valor, char* tipoDado, int n_filhos, ...);
-void adicionarFilho(NoAST* pai, NoAST* filho);
-void liberarNo(NoAST* no);
-void liberarAST(NoAST* raiz);
-void imprimirAST(NoAST* no, int nivel);
-
+NoAST*    criarNo      (TipoAST tipo, char* valor, char* tipoDado, int n_filhos, ...);
+void      adicionarFilho(NoAST* pai, NoAST* filho);
+void      liberarNo    (NoAST* no);
+void      liberarAST   (NoAST* raiz);
+void      imprimirAST  (NoAST* no, int nivel);
 
 #endif

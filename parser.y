@@ -195,31 +195,26 @@ atribuicao:
     ;
 
 
-// CORREÇÃO: Modificar regra 'print' para aceitar argumentos variáveis
 print:
     ID LPAREN STRING lista_args_opcional RPAREN SEMICOLON {
-        // Verificar se ID é 'printf' ou similar poderia ser feito aqui
-        // Criar nó AST_PRINT. O primeiro filho ($3) é a string de formato.
-        // Os filhos subsequentes vêm da lista_args_opcional ($4).
         NoAST* format_str_node = criarNo(AST_STRING, $3, "string", 0);
-        NoAST* args_node = $4; // $4 é a lista de argumentos (pode ser NULL)
-        int num_args = args_node ? args_node->n_filhos : 0;
+        free($3);  // libera a strdup feita em yylex
+        NoAST* args_node       = $4;
         
-        // Cria o nó AST_PRINT com a string de formato como primeiro filho
-        $$ = criarNo(AST_PRINT, NULL, NULL, 1 + num_args, format_str_node);
-        
-        // Adiciona os argumentos da lista como filhos restantes
+        // Inicializa AST_PRINT com apenas 1 filho (a string)
+        $$ = criarNo(AST_PRINT, NULL, NULL, 1, format_str_node);
+
+        // Para cada argumento extra, expande o vetor corretamente
         if (args_node) {
-            for (int i = 0; i < num_args; i++) {
+            for (int i = 0; i < args_node->n_filhos; i++) {
                 adicionarFilho($$, args_node->filhos[i]);
             }
-            liberarNo(args_node); // Libera o nó temporário da lista de args
+            liberarNo(args_node);
         }
-        
-        free($1); // Libera ID (ex: "printf")
-        // Não liberar $3 (string), pois foi usado em format_str_node
+        free($1);
     }
-    ;
+;
+
 
 // CORREÇÃO: Nova regra para lista opcional de argumentos (inicia com vírgula)
 lista_args_opcional:

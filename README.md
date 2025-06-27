@@ -59,7 +59,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ```
 
 3.  Gerar código Python
-```bash
+    ```bash
     python3 quad_to_python.py quads_teste_c.txt > programa.py
     ```
 

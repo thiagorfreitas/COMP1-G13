@@ -38,6 +38,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
 - **Flex**: Para análise léxica.
 - **Bison**: Para análise sintática.
 - **GCC**: Para compilar o código gerado.
+- **Python 3**: Para executar o script de conversão de quádruplos em código Python.
 
 
 ## Como Usar
@@ -46,7 +47,7 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ```bash
     flex lexer.l
     bison -d parser.y
-    gcc parser.tab.c lex.yy.c ast.c tabela.c -o compiler -lfl
+    gcc parser.tab.c lex.yy.c ast.c tabela.c codegen.c -o compiler -lfl
     ```
 
 2. Testar o fluxo léxico-sintático:
@@ -57,6 +58,10 @@ Certifique-se de ter as seguintes ferramentas instaladas:
     ./compiler < testeAst.c
     ```
 
+3.  Gerar código Python
+```bash
+    python3 quad_to_python.py quads_teste_c.txt > programa.py
+    ```
 
 ## Contribuidores
 

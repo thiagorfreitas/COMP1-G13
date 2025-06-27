@@ -82,8 +82,107 @@ def get_comparison_op(opcode):
     op_map = {"IF_EQ": "==", "IF_NEQ": "!=", "IF_LT": "<", "IF_GT": ">", "IF_LEQ": "<=", "IF_GEQ": ">="}
     return op_map.get(opcode)
 
+def invert_comparison_op(opcode):
+    """Inverts the comparison operator for IF statements that jump to ELSE."""
+    invert_map = {
+        "IF_EQ": "!=", "IF_NEQ": "==", 
+        "IF_LT": ">=", "IF_GT": "<=", 
+        "IF_LEQ": ">", "IF_GEQ": "<"
+    }
+    return invert_map.get(opcode)
+
+def detect_if_else_structure(parsed_quads, start_idx):
+    """Detects IF-ELSE structure starting from an IF_ instruction."""
+    if start_idx >= len(parsed_quads):
+        return None
+    
+    if_quad = parsed_quads[start_idx]
+    if not if_quad["opcode"].startswith("IF_"):
+        return None
+    
+    else_label = if_quad["result"]  # Label to jump to for ELSE
+    
+    # Find the ELSE label position
+    else_idx = None
+    end_label = None
+    end_idx = None
+    
+    for i in range(start_idx + 1, len(parsed_quads)):
+        quad = parsed_quads[i]
+        if quad["opcode"] == "LABEL" and quad["args"][0] == else_label:
+            else_idx = i
+            break
+        elif quad["opcode"] == "GOTO":
+            # This might be the GOTO to skip the ELSE block
+            end_label = quad["args"][0]
+    
+    # Find the end label position
+    if end_label:
+        for i in range(start_idx + 1, len(parsed_quads)):
+            quad = parsed_quads[i]
+            if quad["opcode"] == "LABEL" and quad["args"][0] == end_label:
+                end_idx = i
+                break
+    
+    if else_idx is not None:
+        return {
+            "if_idx": start_idx,
+            "else_idx": else_idx,
+            "end_idx": end_idx,
+            "else_label": else_label,
+            "end_label": end_label
+        }
+    
+    return None
+
+def detect_while_structure(parsed_quads, start_idx):
+    """Detects WHILE structure starting from a LABEL followed by IF_."""
+    if start_idx >= len(parsed_quads):
+        return None
+    
+    # Check if this is a LABEL that could start a while loop
+    if parsed_quads[start_idx]["opcode"] != "LABEL":
+        return None
+    
+    while_label = parsed_quads[start_idx]["args"][0]
+    
+    # Look for IF_ instruction that jumps out of the loop
+    if_idx = None
+    end_label = None
+    goto_back_idx = None
+    
+    for i in range(start_idx + 1, len(parsed_quads)):
+        quad = parsed_quads[i]
+        if quad["opcode"].startswith("IF_"):
+            if_idx = i
+            end_label = quad["result"]  # Where to jump to exit the loop
+            break
+    
+    if not if_idx:
+        return None
+    
+    # Look for GOTO that jumps back to the beginning
+    for i in range(if_idx + 1, len(parsed_quads)):
+        quad = parsed_quads[i]
+        if quad["opcode"] == "GOTO" and quad["args"][0] == while_label:
+            goto_back_idx = i
+            break
+        elif quad["opcode"] == "LABEL" and quad["args"][0] == end_label:
+            # Found the end label before GOTO, this confirms it's a while loop
+            end_idx = i
+            return {
+                "label_idx": start_idx,
+                "if_idx": if_idx,
+                "goto_idx": goto_back_idx,
+                "end_idx": end_idx,
+                "while_label": while_label,
+                "end_label": end_label
+            }
+    
+    return None
+
 def translate_quads_to_python(quad_lines):
-    """Translates quadruple strings into Python code lines with basic control flow."""
+    """Translates quadruple strings into Python code lines with control flow reconstruction."""
     
     parsed_quads = [parse_quad_line(line, i) for i, line in enumerate(quad_lines)]
     parsed_quads = [q for q in parsed_quads if q] # Filter out None results
@@ -92,129 +191,245 @@ def translate_quads_to_python(quad_lines):
         return ["# No valid quadruples found"]
 
     python_code = []
-    indent_level = 0
-    label_to_line = {q["args"][0]: q["line_num"] for q in parsed_quads if q["opcode"] == "LABEL"}
-    line_to_label = {v: k for k, v in label_to_line.items()}
-    
-    # Basic block identification (very simplified)
-    leaders = {0} # First instruction is a leader
-    for i, q in enumerate(parsed_quads):
-        if q["opcode"] == "LABEL":
-            leaders.add(i)
-        if q["opcode"].startswith("IF_") or q["opcode"] == "GOTO":
-            leaders.add(i + 1) # Instruction after jump is a leader
-            target_label = q["result"] if q["opcode"].startswith("IF_") else q["args"][0]
-            if target_label in label_to_line:
-                 leaders.add(label_to_line[target_label]) # Target of jump is a leader
-                 
-    leaders = sorted(list(leaders))
-    basic_blocks = []
-    for i in range(len(leaders)):
-        start = leaders[i]
-        end = leaders[i+1] if i+1 < len(leaders) else len(parsed_quads)
-        # Ensure block is not empty and start is within bounds
-        if start < end and start < len(parsed_quads):
-             basic_blocks.append(parsed_quads[start:end])
-
-    # --- Translation Pass --- 
-    # This part is still complex and needs a proper CFG analysis for robust translation.
-    # The following is a simplified attempt and likely won't handle all cases correctly,
-    # especially nested loops or complex conditions.
-    
-    processed_lines = set()
-    current_line_index = 0
+    processed_indices = set()  # Track which quads we've already processed
     
     # Add a marker for the start
     python_code.append("# Start of generated code")
     python_code.append("import sys # Added for potential runtime needs")
-    python_code.append("") # Blank line
+    python_code.append("")  # Blank line after import
 
-    # --- Very Basic Translation (No real control flow reconstruction) ---
-    # This just translates instructions linearly and adds comments for jumps/labels
-    # A real translator needs a Control Flow Graph (CFG)
-    
-    for i, quad in enumerate(parsed_quads):
+    i = 0
+    while i < len(parsed_quads):
+        if i in processed_indices:
+            i += 1
+            continue
+            
+        quad = parsed_quads[i]
         opcode = quad["opcode"]
         args = quad["args"]
         result = quad["result"]
-        line_py = ""
-        indent_str = "    " * indent_level
-
-        # Check if this line starts a known label
-        if i in line_to_label:
-             # Simple comment for label, real handling is complex
-             python_code.append(f"{indent_str}# --- LABEL {line_to_label[i]} ---")
-
-        if opcode == "ASSIGN":
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])}"
-        elif opcode == "ADD":
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])} + {format_operand(args[1])}"
-        elif opcode == "SUB":
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])} - {format_operand(args[1])}"
-        elif opcode == "MUL":
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])} * {format_operand(args[1])}"
-        elif opcode == "DIV": 
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])} // {format_operand(args[1])} # Using integer division"
-        elif opcode == "MOD":
-            line_py = f"{indent_str}{format_operand(result)} = {format_operand(args[0])} % {format_operand(args[1])}"
-        elif opcode == "UMINUS":
-            line_py = f"{indent_str}{format_operand(result)} = -{format_operand(args[0])}"
-        elif opcode == "PRINT":
-            orig = quad["original"]              # ex: '1: PRINT  ""Idade: %d"", idade'
-            raw = orig.split("PRINT", 1)[1].strip()
-            if ',' in raw:
-                lit_raw, var = raw.split(",", 1)
-                var = var.strip()
-            else:
-                lit_raw, var = raw, None
-
+        
+        # Check for WHILE structure starting with LABEL
+        if opcode == "LABEL":
+            while_structure = detect_while_structure(parsed_quads, i)
+            if while_structure:
+                # Generate WHILE block
+                if_quad = parsed_quads[while_structure["if_idx"]]
+                
+                # Invert the condition since IF jumps out of the loop
+                inverted_op = invert_comparison_op(if_quad["opcode"])
+                condition = f"{format_operand(if_quad['args'][0])} {inverted_op} {format_operand(if_quad['args'][1])}"
+                
+                python_code.append(f"while {condition}:")
+                
+                # Process loop body (instructions between IF and GOTO back)
+                body_start = while_structure["if_idx"] + 1
+                body_end = while_structure["goto_idx"] if while_structure["goto_idx"] else while_structure["end_idx"]
+                
+                for j in range(body_start, body_end):
+                    if j < len(parsed_quads) and parsed_quads[j]["opcode"] not in ["GOTO", "LABEL"]:
+                        line_py = translate_single_quad(parsed_quads[j], 1)
+                        if line_py:
+                            python_code.append(line_py)
+                        processed_indices.add(j)
+                
+                # Mark all processed indices
+                for j in range(while_structure["label_idx"], while_structure["end_idx"] + 1):
+                    processed_indices.add(j)
+                
+                # Skip to after the WHILE structure
+                i = while_structure["end_idx"] + 1
+                continue
+        
+        # Check for IF-ELSE structure
+        if opcode.startswith("IF_"):
+            # First check if this is a while loop by looking for specific pattern
+            # LABEL -> IF_ -> body -> GOTO back to LABEL
+            is_while_loop = False
+            if i > 0 and parsed_quads[i-1]["opcode"] == "LABEL":
+                # Check if there's a GOTO that jumps back to the previous label
+                prev_label = parsed_quads[i-1]["args"][0]
+                for j in range(i+1, min(len(parsed_quads), i+10)):
+                    if (parsed_quads[j]["opcode"] == "GOTO" and 
+                        parsed_quads[j]["args"][0] == prev_label):
+                        is_while_loop = True
+                        break
             
-            inner = lit_raw.strip().strip('"')   # -> Idade: %d
-            fmt = f'"{inner}"'                   # -> '"Idade: %d"'
-
-            if var:
-                line_py = f"{indent_str}print({fmt} % {var})"
+            if is_while_loop:
+                # This is a while loop
+                inverted_op = invert_comparison_op(opcode)
+                condition = f"{format_operand(args[0])} {inverted_op} {format_operand(args[1])}"
+                
+                python_code.append(f"while {condition}:")
+                
+                # Find the GOTO that jumps back
+                goto_idx = None
+                for j in range(i+1, len(parsed_quads)):
+                    if parsed_quads[j]["opcode"] == "GOTO":
+                        goto_idx = j
+                        break
+                
+                # Process loop body (between IF and GOTO)
+                if goto_idx:
+                    for j in range(i+1, goto_idx):
+                        if j < len(parsed_quads):
+                            line_py = translate_single_quad(parsed_quads[j], 1)
+                            if line_py:
+                                python_code.append(line_py)
+                            processed_indices.add(j)
+                
+                # Mark processed indices
+                processed_indices.add(i-1)  # The LABEL
+                processed_indices.add(i)    # The IF
+                if goto_idx:
+                    processed_indices.add(goto_idx)  # The GOTO
+                
+                # Find and mark the end label
+                end_label = result  # The label IF jumps to
+                for j in range(i+1, len(parsed_quads)):
+                    if (parsed_quads[j]["opcode"] == "LABEL" and 
+                        parsed_quads[j]["args"][0] == end_label):
+                        processed_indices.add(j)
+                        i = j + 1
+                        break
+                else:
+                    i = goto_idx + 1 if goto_idx else i + 1
+                continue
             else:
-                line_py = f"{indent_str}print({fmt})"
+                # Regular IF-ELSE structure
+                if_structure = detect_if_else_structure(parsed_quads, i)
+                if if_structure:
+                    # Generate IF-ELSE block
+                    if_quad = parsed_quads[if_structure["if_idx"]]
+                    
+                    # Invert the condition since IF jumps to ELSE
+                    inverted_op = invert_comparison_op(if_quad["opcode"])
+                    condition = f"{format_operand(if_quad['args'][0])} {inverted_op} {format_operand(if_quad['args'][1])}"
+                    
+                    python_code.append(f"if {condition}:")
+                    
+                    # Process THEN block (instructions between IF and ELSE label)
+                    then_start = if_structure["if_idx"] + 1
+                    then_end = if_structure["else_idx"]
+                    
+                    for j in range(then_start, then_end):
+                        if j < len(parsed_quads) and parsed_quads[j]["opcode"] != "GOTO":
+                            line_py = translate_single_quad(parsed_quads[j], 1)
+                            if line_py:
+                                python_code.append(line_py)
+                            processed_indices.add(j)
+                    
+                    # Process ELSE block if it exists
+                    if if_structure["else_idx"] is not None:
+                        python_code.append("else:")
+                        
+                        else_start = if_structure["else_idx"] + 1  # Skip the LABEL
+                        else_end = if_structure["end_idx"] if if_structure["end_idx"] else len(parsed_quads)
+                        
+                        for j in range(else_start, else_end):
+                            if j < len(parsed_quads):
+                                line_py = translate_single_quad(parsed_quads[j], 1)
+                                if line_py:
+                                    python_code.append(line_py)
+                                processed_indices.add(j)
+                    
+                    # Mark all processed indices
+                    processed_indices.add(if_structure["if_idx"])
+                    if if_structure["else_idx"]:
+                        processed_indices.add(if_structure["else_idx"])
+                    if if_structure["end_idx"]:
+                        processed_indices.add(if_structure["end_idx"])
+                    
+                    # Skip to after the IF-ELSE structure
+                    i = if_structure["end_idx"] + 1 if if_structure["end_idx"] else else_end
+                    continue
+                else:
+                    # Fallback for unrecognized IF structure
+                    comp_op = get_comparison_op(opcode)
+                    if comp_op:
+                        condition = f"{format_operand(args[0])} {comp_op} {format_operand(args[1])}"
+                        python_code.append(f"# IF {condition} GOTO {result} # Control flow not fully implemented")
+        
+        # Handle other opcodes
         elif opcode == "LABEL":
-            # Handled above by adding a comment marker
-            continue # Don't generate a separate line for the quad itself
+            # Skip labels that are part of control structures
+            pass
         elif opcode == "GOTO":
-            line_py = f"{indent_str}# GOTO {args[0]} # Control flow not fully implemented"
-            # In a real implementation, this would affect the next instruction processed
-        elif opcode.startswith("IF_"):
-            comp_op = get_comparison_op(opcode)
-            if comp_op:
-                 # Basic IF structure - This is highly simplified!
-                 # It doesn't handle block structure or else/elif correctly.
-                 condition = f"{format_operand(args[0])} {comp_op} {format_operand(args[1])}"
-                 line_py = f"{indent_str}# IF {condition} GOTO {result} # Control flow not fully implemented"
-                 # A real implementation would likely generate an `if condition:` block
-                 # and potentially use `continue` or `break` if inside a loop, or structure
-                 # the code based on the target label.
-            else:
-                 original_quad_str = quad["original"]
-                 line_py = f"{indent_str}# Unknown IF condition: {original_quad_str}"
+            # Skip GOTOs that are part of control structures
+            pass
         else:
-            original_quad_str = quad["original"]
-            line_py = f"{indent_str}# Quad not translated: {original_quad_str}"
-
-        if line_py:
-            python_code.append(line_py)
+            # Translate regular instructions
+            line_py = translate_single_quad(quad, 0)
+            if line_py:
+                python_code.append(line_py)
+        
+        processed_indices.add(i)
+        i += 1
 
     python_code.append("") # Blank line
     python_code.append("# End of generated code")
     return python_code
 
+def translate_single_quad(quad, indent_level):
+    """Translates a single quadruple to Python code with specified indentation."""
+    opcode = quad["opcode"]
+    args = quad["args"]
+    result = quad["result"]
+    indent_str = "    " * indent_level
+
+    if opcode == "ASSIGN":
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])}"
+    elif opcode == "ADD":
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])} + {format_operand(args[1])}"
+    elif opcode == "SUB":
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])} - {format_operand(args[1])}"
+    elif opcode == "MUL":
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])} * {format_operand(args[1])}"
+    elif opcode == "DIV": 
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])} // {format_operand(args[1])} # Using integer division"
+    elif opcode == "MOD":
+        return f"{indent_str}{format_operand(result)} = {format_operand(args[0])} % {format_operand(args[1])}"
+    elif opcode == "UMINUS":
+        return f"{indent_str}{format_operand(result)} = -{format_operand(args[0])}"
+    elif opcode == "PRINT":
+        orig = quad["original"]
+        raw = orig.split("PRINT", 1)[1].strip()
+        if ',' in raw:
+            lit_raw, var = raw.split(",", 1)
+            var = var.strip()
+        else:
+            lit_raw, var = raw, None
+
+        inner = lit_raw.strip().strip('"')
+        fmt = f'"{inner}"'
+
+        if var:
+            return f"{indent_str}print({fmt} % {var})"
+        else:
+            return f"{indent_str}print({fmt})"
+    elif opcode == "LABEL" or opcode == "GOTO":
+        # These are handled by control flow reconstruction
+        return None
+    else:
+        return f"{indent_str}# Quad not translated: {quad['original']}"
+
 # --- Main Execution ---
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         try:
-            with open(sys.argv[1], 'r') as f:
+            with open(sys.argv[1], 'r', encoding='utf-8') as f:
                 quad_input_lines = f.readlines()
         except FileNotFoundError:
             print(f"Error: Input file '{sys.argv[1]}' not found.", file=sys.stderr)
             sys.exit(1)
+        except UnicodeDecodeError:
+            # Try with latin-1 encoding if utf-8 fails
+            try:
+                with open(sys.argv[1], 'r', encoding='latin-1') as f:
+                    quad_input_lines = f.readlines()
+            except Exception as e:
+                print(f"Error reading file: {e}", file=sys.stderr)
+                sys.exit(1)
     else:
         # Read from stdin if no file argument
         quad_input_lines = sys.stdin.readlines()

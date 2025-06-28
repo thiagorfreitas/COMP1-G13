@@ -16,7 +16,10 @@ typedef enum {
     AST_NUM,
     AST_CHAR,
     AST_STRING,
-    AST_LISTA_ARGS
+    AST_LISTA_ARGS,
+    AST_CALL,
+    AST_FUNC_DEF, 
+    AST_RETURN 
 } TipoAST;
 
 typedef struct NoAST {

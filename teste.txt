@@ -1,0 +1,148 @@
+Iniciando análise...
+Análise sintática concluída com sucesso.
+
+---- Árvore Sintática Abstrata (AST) ----
+Node 0x613b55d9bf30 → Tipo: 16, n_filhos: 1, Valor: main, TipoDado: int
+─ filho[0] ptr: 0x613b55d9a880
+  Node 0x613b55d9a880 → Tipo: 8, n_filhos: 9
+  ─ filho[0] ptr: 0x613b55d9a810
+    Node 0x613b55d9a810 → Tipo: 0, n_filhos: 0, Valor: idade, TipoDado: int
+  ─ filho[1] ptr: 0x613b55d9a930
+    Node 0x613b55d9a930 → Tipo: 0, n_filhos: 0, Valor: d, TipoDado: int
+  ─ filho[2] ptr: 0x613b55d9aa30
+    Node 0x613b55d9aa30 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+    ─ filho[0] ptr: 0x613b55d9a9c0
+      Node 0x613b55d9a9c0 → Tipo: 11, n_filhos: 0, Valor: 25, TipoDado: int
+  ─ filho[3] ptr: 0x613b55d9ab30
+    Node 0x613b55d9ab30 → Tipo: 1, n_filhos: 1, Valor: d, TipoDado: int
+    ─ filho[0] ptr: 0x613b55d9aac0
+      Node 0x613b55d9aac0 → Tipo: 11, n_filhos: 0, Valor: 5, TipoDado: int
+  ─ filho[4] ptr: 0x613b55d9ad70
+    Node 0x613b55d9ad70 → Tipo: 2, n_filhos: 3
+    ─ filho[0] ptr: 0x613b55d9ad20
+      Node 0x613b55d9ad20 → Tipo: 13, n_filhos: 0, Valor: "Idade: %d %d", TipoDado: string
+    ─ filho[1] ptr: 0x613b55d9abf0
+      Node 0x613b55d9abf0 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+    ─ filho[2] ptr: 0x613b55d9acb0
+      Node 0x613b55d9acb0 → Tipo: 10, n_filhos: 0, Valor: d, TipoDado: int
+  ─ filho[5] ptr: 0x613b55d9b010
+    Node 0x613b55d9b010 → Tipo: 3, n_filhos: 2
+    ─ filho[0] ptr: 0x613b55d9ae30
+      Node 0x613b55d9ae30 → Tipo: 9, n_filhos: 2, Valor: <, TipoDado: int
+      ─ filho[0] ptr: 0x613b55d9ac60
+        Node 0x613b55d9ac60 → Tipo: 10, n_filhos: 0, Valor: d, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9adc0
+        Node 0x613b55d9adc0 → Tipo: 11, n_filhos: 0, Valor: 10, TipoDado: int
+    ─ filho[1] ptr: 0x613b55d9afc0
+      Node 0x613b55d9afc0 → Tipo: 8, n_filhos: 1
+      ─ filho[0] ptr: 0x613b55d9af50
+        Node 0x613b55d9af50 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+        ─ filho[0] ptr: 0x613b55d9aee0
+          Node 0x613b55d9aee0 → Tipo: 11, n_filhos: 0, Valor: 1, TipoDado: int
+  ─ filho[6] ptr: 0x613b55d9b430
+    Node 0x613b55d9b430 → Tipo: 3, n_filhos: 2
+    ─ filho[0] ptr: 0x613b55d9b150
+      Node 0x613b55d9b150 → Tipo: 9, n_filhos: 2, Valor: <, TipoDado: int
+      ─ filho[0] ptr: 0x613b55d9aba0
+        Node 0x613b55d9aba0 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9b0e0
+        Node 0x613b55d9b0e0 → Tipo: 11, n_filhos: 0, Valor: 30, TipoDado: int
+    ─ filho[1] ptr: 0x613b55d9b3e0
+      Node 0x613b55d9b3e0 → Tipo: 8, n_filhos: 1
+      ─ filho[0] ptr: 0x613b55d9b350
+        Node 0x613b55d9b350 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+        ─ filho[0] ptr: 0x613b55d9b2e0
+          Node 0x613b55d9b2e0 → Tipo: 9, n_filhos: 2, Valor: +, TipoDado: int
+          ─ filho[0] ptr: 0x613b55d9b200
+            Node 0x613b55d9b200 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+          ─ filho[1] ptr: 0x613b55d9b270
+            Node 0x613b55d9b270 → Tipo: 11, n_filhos: 0, Valor: 1, TipoDado: int
+  ─ filho[7] ptr: 0x613b55d9b970
+    Node 0x613b55d9b970 → Tipo: 5, n_filhos: 2
+    ─ filho[0] ptr: 0x613b55d9b560
+      Node 0x613b55d9b560 → Tipo: 9, n_filhos: 2, Valor: <, TipoDado: int
+      ─ filho[0] ptr: 0x613b55d9b480
+        Node 0x613b55d9b480 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9b4f0
+        Node 0x613b55d9b4f0 → Tipo: 11, n_filhos: 0, Valor: 30, TipoDado: int
+    ─ filho[1] ptr: 0x613b55d9b6a0
+      Node 0x613b55d9b6a0 → Tipo: 8, n_filhos: 2
+      ─ filho[0] ptr: 0x613b55d9b740
+        Node 0x613b55d9b740 → Tipo: 2, n_filhos: 2
+        ─ filho[0] ptr: 0x613b55d9b6f0
+          Node 0x613b55d9b6f0 → Tipo: 13, n_filhos: 0, Valor: "Idade: %d\n", TipoDado: string
+        ─ filho[1] ptr: 0x613b55d9b630
+          Node 0x613b55d9b630 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9b8e0
+        Node 0x613b55d9b8e0 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+        ─ filho[0] ptr: 0x613b55d9b870
+          Node 0x613b55d9b870 → Tipo: 9, n_filhos: 2, Valor: +, TipoDado: int
+          ─ filho[0] ptr: 0x613b55d9b7b0
+            Node 0x613b55d9b7b0 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+          ─ filho[1] ptr: 0x613b55d9b800
+            Node 0x613b55d9b800 → Tipo: 11, n_filhos: 0, Valor: 1, TipoDado: int
+  ─ filho[8] ptr: 0x613b55d9bee0
+    Node 0x613b55d9bee0 → Tipo: 7, n_filhos: 2
+    ─ filho[0] ptr: 0x613b55d9bac0
+      Node 0x613b55d9bac0 → Tipo: 8, n_filhos: 2
+      ─ filho[0] ptr: 0x613b55d9bb60
+        Node 0x613b55d9bb60 → Tipo: 2, n_filhos: 2
+        ─ filho[0] ptr: 0x613b55d9bb10
+          Node 0x613b55d9bb10 → Tipo: 13, n_filhos: 0, Valor: "Idade: %d\n", TipoDado: string
+        ─ filho[1] ptr: 0x613b55d9ba50
+          Node 0x613b55d9ba50 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9bd00
+        Node 0x613b55d9bd00 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+        ─ filho[0] ptr: 0x613b55d9bc90
+          Node 0x613b55d9bc90 → Tipo: 9, n_filhos: 2, Valor: +, TipoDado: int
+          ─ filho[0] ptr: 0x613b55d9bbd0
+            Node 0x613b55d9bbd0 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+          ─ filho[1] ptr: 0x613b55d9bc20
+            Node 0x613b55d9bc20 → Tipo: 11, n_filhos: 0, Valor: 1, TipoDado: int
+    ─ filho[1] ptr: 0x613b55d9be70
+      Node 0x613b55d9be70 → Tipo: 9, n_filhos: 2, Valor: <, TipoDado: int
+      ─ filho[0] ptr: 0x613b55d9bd90
+        Node 0x613b55d9bd90 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
+      ─ filho[1] ptr: 0x613b55d9be00
+        Node 0x613b55d9be00 → Tipo: 11, n_filhos: 0, Valor: 35, TipoDado: int
+----------------------------------------
+
+---- Código Intermediário (HLIR Estruturado) ----
+  0: ASSIGN  idade = 25
+  1: ASSIGN  d = 5
+  2: PARAM   d
+  3: PARAM   idade
+  4: PARAM   "Idade: %d %d"
+  5: CALL    printf, 3
+  6: LT      t0 = d < 10
+  7: IF_START t0
+  8:   THEN_START
+  9: ASSIGN  idade = 1
+ 10: IF_END
+ 11: LT      t1 = idade < 30
+ 12: IF_START t1
+ 13:   THEN_START
+ 14: ADD     t2 = idade + 1
+ 15: ASSIGN  idade = t2
+ 16: IF_END
+ 17: WHILE_START
+ 18:     BODY_START
+ 19: LT      t3 = idade < 30
+ 20:   BREAK_IF_FALSE t3
+ 21: PARAM   idade
+ 22: PARAM   "Idade: %d\n"
+ 23: CALL    printf, 2
+ 24: ADD     t4 = idade + 1
+ 25: ASSIGN  idade = t4
+ 26: WHILE_END
+ 27: DO_WHILE_START
+ 28:     BODY_START
+ 29: PARAM   idade
+ 30: PARAM   "Idade: %d\n"
+ 31: CALL    printf, 2
+ 32: ADD     t5 = idade + 1
+ 33: ASSIGN  idade = t5
+ 34: LT      t6 = idade < 35
+ 35:   BREAK_IF_FALSE t6
+ 36: DO_WHILE_END
+---------------------------------------------------

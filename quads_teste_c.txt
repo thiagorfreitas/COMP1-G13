@@ -2,66 +2,23 @@ Iniciando análise...
 Análise sintática concluída com sucesso.
 
 ---- Árvore Sintática Abstrata (AST) ----
-Tipo: 8
-  Tipo: 0, Valor: a, TipoDado: int
-  Tipo: 0, Valor: b, TipoDado: float
-  Tipo: 0, Valor: c, TipoDado: int
-  Tipo: 1, Valor: a, TipoDado: int
-    Tipo: 11, Valor: 10, TipoDado: int
-  Tipo: 1, Valor: b, TipoDado: float
-    Tipo: 11, Valor: 5.5, TipoDado: float
-  Tipo: 1, Valor: c, TipoDado: int
-    Tipo: 9, Valor: +, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 11, Valor: 5, TipoDado: int
-  Tipo: 1, Valor: b, TipoDado: float
-    Tipo: 9, Valor: *, TipoDado: float
-      Tipo: 10, Valor: b, TipoDado: float
-      Tipo: 11, Valor: 2.0, TipoDado: float
-  Tipo: 1, Valor: a, TipoDado: int
-    Tipo: 9, Valor: %, TipoDado: int
-      Tipo: 10, Valor: c, TipoDado: int
-      Tipo: 11, Valor: 3, TipoDado: int
-  Tipo: 4
-    Tipo: 9, Valor: <, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 10, Valor: c, TipoDado: int
-    Tipo: 8
-      Tipo: 1, Valor: b, TipoDado: float
-        Tipo: 11, Valor: 1.0, TipoDado: float
-    Tipo: 8
-      Tipo: 1, Valor: a, TipoDado: int
-        Tipo: 11, Valor: 0, TipoDado: int
-  Tipo: 5
-    Tipo: 9, Valor: >, TipoDado: int
-      Tipo: 10, Valor: a, TipoDado: int
-      Tipo: 11, Valor: 0, TipoDado: int
-    Tipo: 8
-      Tipo: 1, Valor: a, TipoDado: int
-        Tipo: 9, Valor: -, TipoDado: int
-          Tipo: 10, Valor: a, TipoDado: int
-          Tipo: 11, Valor: 1, TipoDado: int
+Node 0x5d561f13b830 → Tipo: 8, n_filhos: 3
+─ filho[0] ptr: 0x5d561f13b7c0
+  Node 0x5d561f13b7c0 → Tipo: 0, n_filhos: 0, Valor: idade, TipoDado: int
+─ filho[1] ptr: 0x5d561f13b910
+  Node 0x5d561f13b910 → Tipo: 1, n_filhos: 1, Valor: idade, TipoDado: int
+  ─ filho[0] ptr: 0x5d561f13b8a0
+    Node 0x5d561f13b8a0 → Tipo: 11, n_filhos: 0, Valor: 25, TipoDado: int
+─ filho[2] ptr: 0x5d561f13bad0
+  Node 0x5d561f13bad0 → Tipo: 2, n_filhos: 2
+  ─ filho[0] ptr: 0x5d561f13ba80
+    Node 0x5d561f13ba80 → Tipo: 13, n_filhos: 0, Valor: "Idade: %d", TipoDado: string
+  ─ filho[1] ptr: 0x5d561f13b9c0
+    Node 0x5d561f13b9c0 → Tipo: 10, n_filhos: 0, Valor: idade, TipoDado: int
 ----------------------------------------
+17: PRINT "Idade: %d" idade
 
 ---- Código Intermediário (Quádruplas) ----
-  0: ASSIGN a = 10
-  1: ASSIGN b = 5.50
-  2: ADD    t0 = a + 5
-  3: ASSIGN c = t0
-  4: MUL    t1 = b * 2.00
-  5: ASSIGN b = t1
-  6: MOD    t2 = c % 3
-  7: ASSIGN a = t2
-  8: IF_GEQ a >= c GOTO L_ELSE0
-  9: ASSIGN b = 1.00
- 10: GOTO   L_IF_END1
- 11: LABEL  L_ELSE0:
- 12: ASSIGN a = 0
- 13: LABEL  L_IF_END1:
- 14: LABEL  L_WHILE_BEGIN2:
- 15: IF_LEQ a <= 0 GOTO L_WHILE_END3
- 16: SUB    t3 = a - 1
- 17: ASSIGN a = t3
- 18: GOTO   L_WHILE_BEGIN2
- 19: LABEL  L_WHILE_END3:
+  0: ASSIGN idade = 25
+  1: PRINT  ""Idade: %d"", idade
 ----------------------------------------

@@ -84,7 +84,7 @@ const char* check_comparison_logical_types(const char* type1, const char* type2,
 %token SEMICOLON COMMA LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 
 // CORREÇÃO: Adicionar lista_args e lista_args_opcional ao %type
-%type <ast> programa lista_comandos comando declaracao_var atribuicao print bloco if_else while_loop for_loop do_while_loop expr valor lista_args lista_args_opcional
+%type <ast> programa lista_comandos comando declaracao_var atribuicao print bloco if_else while_loop for_loop do_while_loop expr valor lista_args lista_args_opcional definicao_funcao declarador_funcao corpo_funcao
 %type <str> tipo
 
 /* Precedência e associatividade para expressões */
@@ -101,7 +101,28 @@ const char* check_comparison_logical_types(const char* type1, const char* type2,
 %%
 
 programa:
-    lista_comandos { raizAST = $1; }
+    definicao_funcao { raizAST = $1; }
+    ;
+
+definicao_funcao:
+    tipo declarador_funcao corpo_funcao {
+        $$ = criarNo(AST_FUNC_DEF, $2->valor, $1, 1, $3);
+        liberarNo($2);
+    }
+    ;
+
+/* Regra que reconhece o nome e os parênteses: "main()" */
+declarador_funcao:
+    ID LPAREN RPAREN {
+        $$ = criarNo(AST_ID, $1, NULL, 0);
+        free($1);
+    }
+    ;
+
+/* Regra que reconhece o corpo com chaves: "{ ... }" */
+corpo_funcao:
+    LBRACE lista_comandos RBRACE { $$ = $2; }
+    | LBRACE RBRACE { $$ = criarNo(AST_BLOCO, NULL, NULL, 0); }
     ;
 
 lista_comandos:
@@ -142,6 +163,8 @@ comando:
   | while_loop { $$ = $1; }
   | for_loop { $$ = $1; }
   | do_while_loop { $$ = $1; }
+  | KW_RETURN expr SEMICOLON { $$ = criarNo(AST_RETURN, NULL, NULL, 1, $2); }
+  | KW_RETURN SEMICOLON { $$ = criarNo(AST_RETURN, NULL, NULL, 0); }
   | SEMICOLON { $$ = NULL; } /* Comando vazio, não gera nó */
   ;
 
